@@ -154,13 +154,15 @@ class Crawler {
     }
   }
 
-  /// Reads the deadline printed on an assignment / quiz page (best effort, never fails the crawl)
+  /// Reads the deadline printed on an assignment / quiz page. Best effort: one quiet attempt,
+  /// a failure here is never recorded as a crawl error and never stops the crawl.
   Future<void> _readDue(Item item) async {
     final u = Uri.tryParse(item.url);
     if (u == null || !isMoodleHost(u.host) || !_visited.add(item.url)) return;
-    final r = await _get(item.url);
-    if (r == null || r.body == null) return;
-    item.due = parseDueDate(r.body!);
+    try {
+      final r = await _pool.run<FetchResult>(() => fetch(item.url));
+      if (r.ok && r.body != null) item.due = parseDueDate(r.body!);
+    } catch (_) {}
   }
 
   /// Follows one item according to its kind (folders list files, pages list links, "file"/"url"

@@ -51,6 +51,8 @@ FakeSite buildSite() => FakeSite({
         </div>'''),
       '$host/mod/url/view.php?id=23':
           FetchResult(status: 200, finalUrl: 'https://www.youtube.com/watch?v=q', contentType: 'text/html'),
+      '$host/mod/assign/view.php?id=24': html('$host/mod/assign/view.php?id=24',
+          '<div id="region-main"><div>Due: Monday, 2 December 2026, 11:59 PM</div></div>'),
       '$host/mod/page/view.php?id=25': html('$host/mod/page/view.php?id=25', '''
         <div id="region-main">
           <iframe src="https://www.youtube.com/embed/abc"></iframe>
@@ -97,9 +99,10 @@ void main() {
     expect(notes.children.length, 2);
     expect(notes.children.every((i) => i.kind == ItemKind.video), isTrue);
 
-    // leaves are not requested
-    expect(find(c, 'HW1').kind, ItemKind.assignment);
-    expect(site.log.any((u) => u.contains('/mod/assign/')), isFalse);
+    // assignments are opened only to read their deadline
+    final hw = find(c, 'HW1');
+    expect(hw.kind, ItemKind.assignment);
+    expect(hw.due, DateTime(2026, 12, 2, 23, 59));
   });
 
   test('a failing page is retried once, recorded, and does not stop the crawl', () async {
