@@ -129,7 +129,7 @@ List<Task> buildTasks(Tree tree, StudyData data) {
             item: i,
             order: n++,
             minutes: estimateMinutes(i, cfg, data.settings, st),
-            done: st?.done ?? false,
+            done: (st?.done ?? false) || i.submitted == true,
             doneAt: st?.doneAt,
           ));
         }

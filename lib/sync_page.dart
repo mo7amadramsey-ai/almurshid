@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'crawler/classify.dart';
@@ -130,7 +131,13 @@ class _SyncPageState extends State<SyncPage> {
       });
       final old = await loadTree();
       await saveTree(tree);
-      await saveNews(computeNews(old, tree));
+      final news = computeNews(old, tree);
+      await saveNews(news);
+      final study = await loadStudy();
+      stampFirstSeen(study, old, tree);
+      await saveStudy(study);
+      await saveLog(appendActivity(await loadLog(), news));
+      await notifyNews(news);
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (e) {

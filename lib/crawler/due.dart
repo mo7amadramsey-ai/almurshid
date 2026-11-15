@@ -89,3 +89,26 @@ DateTime? parseDueDate(String html) {
   }
   return null;
 }
+
+/// Submission status printed on an assignment page: true = submitted, false = not submitted, null = unknown.
+/// Only the text right after a "submission status" label is read, so instructions elsewhere on the page
+/// ("... must be submitted for grading") are not mistaken for the student's status.
+bool? parseSubmitted(String html) {
+  final low = _plain(html).toLowerCase();
+  const labels = ['submission status', 'حالة التسليم', 'حالة التقديم', 'حالة الإرسال'];
+  for (final l in labels) {
+    final i = low.indexOf(l);
+    if (i < 0) continue;
+    final end = (i + l.length + 90) > low.length ? low.length : i + l.length + 90;
+    final w = low.substring(i + l.length, end);
+    const no = ['no attempt', 'not submitted', 'no submissions', 'draft', 'لم يتم', 'لا توجد محاولة', 'غير مسلّم', 'غير مسلم', 'لا يوجد تسليم'];
+    for (final n in no) {
+      if (w.contains(n)) return false;
+    }
+    const yes = ['submitted for grading', 'submitted', 'تم التسليم', 'تم تسليم', 'تم الإرسال', 'تم تقديم'];
+    for (final y in yes) {
+      if (w.contains(y)) return true;
+    }
+  }
+  return null;
+}

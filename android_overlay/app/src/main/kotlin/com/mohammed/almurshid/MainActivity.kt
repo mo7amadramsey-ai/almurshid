@@ -4,6 +4,7 @@ import android.app.admin.DeviceAdminReceiver
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -100,6 +101,26 @@ class MainActivity : FlutterActivity() {
                 "isFocused" -> {
                     val multi = Build.VERSION.SDK_INT >= 24 && isInMultiWindowMode
                     result.success(hasWindowFocus() && !multi)
+                }
+                "notify" -> {
+                    Notifier.show(this, (call.argument<Number>("id"))!!.toInt(), call.argument<String>("title") ?: "", call.argument<String>("body") ?: "")
+                    result.success(true)
+                }
+                "schedule" -> {
+                    Notifier.schedule(this, (call.argument<Number>("id"))!!.toInt(), (call.argument<Number>("at"))!!.toLong(),
+                        call.argument<String>("title") ?: "", call.argument<String>("body") ?: "")
+                    result.success(true)
+                }
+                "cancelReminder" -> {
+                    Notifier.cancel(this, (call.argument<Number>("id"))!!.toInt())
+                    result.success(true)
+                }
+                "requestNotifPermission" -> {
+                    if (Build.VERSION.SDK_INT >= 33 &&
+                        checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 77)
+                    }
+                    result.success(true)
                 }
                 "isDeviceOwner" -> {
                     result.success(getSystemService(DevicePolicyManager::class.java).isDeviceOwnerApp(packageName))

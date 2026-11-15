@@ -28,3 +28,18 @@ Future<SyncNews?> loadNews() async {
 }
 
 Future<void> saveNews(SyncNews n) async => (await _f('news.json')).writeAsString(jsonEncode(n.toJson()));
+
+Future<List<ActivityEntry>> loadLog() async {
+  try {
+    final f = await _f('log.json');
+    if (!await f.exists()) return [];
+    return (jsonDecode(await f.readAsString()) as List)
+        .map((e) => ActivityEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  } catch (_) {
+    return [];
+  }
+}
+
+Future<void> saveLog(List<ActivityEntry> l) async =>
+    (await _f('log.json')).writeAsString(jsonEncode(l.map((e) => e.toJson()).toList()));

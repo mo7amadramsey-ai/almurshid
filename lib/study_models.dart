@@ -34,13 +34,17 @@ class ItemState {
   DateTime? doneAt;
   int? minutes; // typed by the user (wins over everything)
   int? aiMinutes; // estimated by the AI
-  ItemState({this.done = false, this.doneAt, this.minutes, this.aiMinutes});
+  DateTime? firstSeen; // when the app first saw this item (proxy for the upload time)
+  bool baseline; // seen in the very first import: its real upload time is unknown
+  ItemState({this.done = false, this.doneAt, this.minutes, this.aiMinutes, this.firstSeen, this.baseline = false});
 
   Map<String, dynamic> toJson() => {
         'done': done,
         'doneAt': doneAt?.toIso8601String(),
         'minutes': minutes,
         'aiMinutes': aiMinutes,
+        'firstSeen': firstSeen?.toIso8601String(),
+        'baseline': baseline,
       };
 
   factory ItemState.fromJson(Map<String, dynamic> j) => ItemState(
@@ -48,6 +52,8 @@ class ItemState {
         doneAt: j['doneAt'] == null ? null : DateTime.parse(j['doneAt'] as String),
         minutes: (j['minutes'] as num?)?.toInt(),
         aiMinutes: (j['aiMinutes'] as num?)?.toInt(),
+        firstSeen: j['firstSeen'] == null ? null : DateTime.tryParse(j['firstSeen'] as String),
+        baseline: (j['baseline'] as bool?) ?? false,
       );
 }
 
@@ -173,4 +179,41 @@ SyncNews computeNews(Tree? old, Tree now) {
     }
   }
   return SyncNews(at: now.fetchedAt, first: false, added: added.take(300).toList());
+}
+
+/// Records when each item was first seen. Items that were already in the previous tree (or in the very
+/// first import) are flagged [ItemState.baseline]: their real upload time is unknown, so the chapter
+/// grouping does not use their timestamp.
+void stampFirstSeen(StudyData d, Tree? old, Tree now) {
+  final before = <String>{
+    if (old != null)
+      for (final c in old.courses)
+        for (final i in c.allItems) '${c.id}|${i.url}',
+  };
+  for (final c in now.courses) {
+    for (final i in c.allItems) {
+      final id = '${c.id}|${i.url}';
+      final st = d.state(id);
+      if (st.firstSeen != null) continue;
+      st.firstSeen = now.fetchedAt;
+      st.baseline = old == null || before.contains(id);
+    }
+  }
+}
+
+/// One line of the personal follow-up log ("a new lecture was uploaded", ...)
+class ActivityEntry {
+  final DateTime at;
+  final String course, title, kind;
+  ActivityEntry(this.at, this.course, this.title, this.kind);
+  Map<String, dynamic> toJson() => {'at': at.toIso8601String(), 'course': course, 'title': title, 'kind': kind};
+  factory ActivityEntry.fromJson(Map<String, dynamic> j) => ActivityEntry(
+      DateTime.parse(j['at'] as String), j['course'] as String, j['title'] as String, j['kind'] as String);
+}
+
+/// Appends the news of one sync to [log] (newest first, capped)
+List<ActivityEntry> appendActivity(List<ActivityEntry> log, SyncNews n, {int cap = 300}) {
+  if (n.first) return log;
+  final add = [for (final e in n.added) ActivityEntry(n.at, e.course, e.title, e.kind)];
+  return [...add, ...log].take(cap).toList();
 }

@@ -161,7 +161,10 @@ class Crawler {
     if (u == null || !isMoodleHost(u.host) || !_visited.add(item.url)) return;
     try {
       final r = await _pool.run<FetchResult>(() => fetch(item.url));
-      if (r.ok && r.body != null) item.due = parseDueDate(r.body!);
+      if (r.ok && r.body != null) {
+        item.due = parseDueDate(r.body!);
+        if (item.kind == ItemKind.assignment) item.submitted = parseSubmitted(r.body!);
+      }
     } catch (_) {}
   }
 

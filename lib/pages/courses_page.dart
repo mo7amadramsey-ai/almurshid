@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../ai.dart';
 import '../app_state.dart';
+import '../chapters.dart';
 import '../models.dart';
 import '../planner.dart';
 import '../study_models.dart';
@@ -116,13 +117,23 @@ class _CoursePageState extends State<CoursePage> {
         final cfg = app.data.cfg(course.id);
         final tasks = app.tasksOf(course.id);
         final rows = <Widget>[];
-        String? sec;
-        for (final t in tasks) {
-          if (t.section != sec) {
-            sec = t.section;
+        for (final g in groupChapters(tasks, app.data.items)) {
+          final doneN = g.tasks.where((t) => t.done).length;
+          rows.add(Padding(
+            padding: const EdgeInsets.fromLTRB(4, 18, 4, 4),
+            child: Row(children: [
+              Expanded(child: Text(g.label, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kForest))),
+              Text('$doneN/${g.tasks.length}', style: const TextStyle(color: kMoss)),
+            ]),
+          ));
+          String? bucket;
+          for (final t in g.tasks) {
+          final b = bucketOf(t.kind);
+          if (b != bucket) {
+            bucket = b;
             rows.add(Padding(
-              padding: const EdgeInsets.fromLTRB(4, 16, 4, 6),
-              child: Text(sec.isEmpty ? 'عام' : sec, style: const TextStyle(fontWeight: FontWeight.w800, color: kMoss)),
+              padding: const EdgeInsets.fromLTRB(8, 8, 4, 4),
+              child: Text(b, style: const TextStyle(fontWeight: FontWeight.w700, color: kMoss, fontSize: 12.5)),
             ));
           }
           rows.add(Container(
@@ -143,6 +154,7 @@ class _CoursePageState extends State<CoursePage> {
               ),
             ),
           ));
+          }
         }
         return Scaffold(
           appBar: AppBar(title: Text(course.title, maxLines: 1, overflow: TextOverflow.ellipsis)),

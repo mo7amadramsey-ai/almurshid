@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'models.dart';
+import 'notifier.dart';
 import 'planner.dart';
 import 'storage.dart';
 import 'study_models.dart';
@@ -22,6 +23,7 @@ class AppState extends ChangeNotifier {
     rebuild();
     loaded = true;
     notifyListeners();
+    rescheduleReminders(tree, data); // deadline / exam / daily reminders
   }
 
   void rebuild() {

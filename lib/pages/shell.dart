@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../sync_page.dart';
+import '../notifier.dart';
 import '../theme.dart';
+import 'follow_page.dart';
 import 'courses_page.dart';
 import 'mentor_page.dart';
 import 'plan_page.dart';
@@ -22,6 +24,7 @@ class _ShellState extends State<Shell> {
   void initState() {
     super.initState();
     app.init();
+    askNotifPermission();
     WidgetsBinding.instance.addPostFrameCallback((_) => resumeStrictIfAny(context));
   }
 
@@ -32,7 +35,7 @@ class _ShellState extends State<Shell> {
 
   @override
   Widget build(BuildContext context) {
-    const titles = ['اليوم', 'الخطة', 'المواد', 'المرشد'];
+    const titles = ['اليوم', 'الخطة', 'المواد', 'المتابعة', 'المرشد'];
     return Scaffold(
       appBar: AppBar(
         title: Text(titles[tab]),
@@ -49,6 +52,7 @@ class _ShellState extends State<Shell> {
         TodayPage(onSync: _sync, onPlan: () => setState(() => tab = 1)),
         const PlanPage(),
         const CoursesPage(),
+        const FollowPage(),
         const MentorPage(),
       ]),
       bottomNavigationBar: NavigationBar(
@@ -60,6 +64,7 @@ class _ShellState extends State<Shell> {
           NavigationDestination(icon: Icon(Icons.today_outlined), selectedIcon: Icon(Icons.today), label: 'اليوم'),
           NavigationDestination(icon: Icon(Icons.event_note_outlined), selectedIcon: Icon(Icons.event_note), label: 'الخطة'),
           NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'المواد'),
+          NavigationDestination(icon: Icon(Icons.notifications_outlined), selectedIcon: Icon(Icons.notifications), label: 'المتابعة'),
           NavigationDestination(icon: Icon(Icons.auto_awesome_outlined), selectedIcon: Icon(Icons.auto_awesome), label: 'المرشد'),
         ],
       ),
