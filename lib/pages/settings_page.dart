@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../ai.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import '../tree_page.dart';
@@ -13,6 +14,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   late final TextEditingController key;
   late final TextEditingController model;
+  late final TextEditingController baseUrl;
   bool hide = true;
 
   @override
@@ -20,12 +22,14 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     key = TextEditingController(text: app.settings.apiKey);
     model = TextEditingController(text: app.settings.model);
+    baseUrl = TextEditingController(text: app.settings.baseUrl);
   }
 
   @override
   void dispose() {
     key.dispose();
     model.dispose();
+    baseUrl.dispose();
     super.dispose();
   }
 
@@ -130,28 +134,58 @@ class _SettingsPageState extends State<SettingsPage> {
         Panel(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text(
-              'يتصل التطبيق بـ Claude مباشرة من هاتفك بمفتاحك الخاص. المفتاح يُحفظ في ذاكرة التطبيق على الهاتف فقط، ولا يُرسل إلا إلى Anthropic. '
-              'يرى الذكاء الاصطناعي عناوين المواد وخطتك فقط، لا كلمة سرك ولا ملفاتك.',
+              'اختر أي خدمة تريدها. فيه خيارات مجانية (Gemini وGroq وOpenRouter) بمفتاح تأخذه مجاناً من موقع الخدمة، '
+              'ولا تحتاج حساب Claude. المفتاح يُحفظ على هاتفك فقط ويُرسل لخدمتك أنت فقط. '
+              'يرى الذكاء الاصطناعي عناوين المواد وخطتك، لا كلمة سرك ولا ملفاتك.',
               style: TextStyle(height: 1.6, fontSize: 13),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: key,
-              obscureText: hide,
-              textDirection: TextDirection.ltr,
-              decoration: InputDecoration(
-                labelText: 'مفتاح Claude API',
-                suffixIcon: IconButton(icon: Icon(hide ? Icons.visibility_off : Icons.visibility), onPressed: () => setState(() => hide = !hide)),
-              ),
-              onChanged: (v) => s.apiKey = v.trim(),
+            DropdownButtonFormField<String>(
+              value: providerById(s.provider).id,
+              isExpanded: true,
+              decoration: const InputDecoration(labelText: 'الخدمة'),
+              items: [for (final p in aiProviders) DropdownMenuItem(value: p.id, child: Text(p.name))],
+              onChanged: (v) {
+                if (v == null) return;
+                s.provider = v;
+                s.model = '';
+                s.baseUrl = '';
+                model.text = '';
+                baseUrl.text = '';
+                setState(() {});
+              },
             ),
             const SizedBox(height: 10),
-            TextField(
-              controller: model,
-              textDirection: TextDirection.ltr,
-              decoration: const InputDecoration(labelText: 'النموذج'),
-              onChanged: (v) => s.model = v.trim(),
-            ),
+            Builder(builder: (_) {
+              final p = providerById(s.provider);
+              return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                TextField(
+                  controller: key,
+                  obscureText: hide,
+                  textDirection: TextDirection.ltr,
+                  decoration: InputDecoration(
+                    labelText: 'مفتاح API',
+                    helperText: p.keyHint,
+                    suffixIcon: IconButton(icon: Icon(hide ? Icons.visibility_off : Icons.visibility), onPressed: () => setState(() => hide = !hide)),
+                  ),
+                  onChanged: (v) => s.apiKey = v.trim(),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: model,
+                  textDirection: TextDirection.ltr,
+                  decoration: InputDecoration(labelText: 'النموذج', hintText: p.model, helperText: 'اتركه فارغاً لاستعمال: ${p.model}'),
+                  onChanged: (v) => s.model = v.trim(),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: baseUrl,
+                  textDirection: TextDirection.ltr,
+                  decoration: InputDecoration(labelText: 'عنوان الخدمة (اختياري)', hintText: p.baseUrl),
+                  onChanged: (v) => s.baseUrl = v.trim(),
+                ),
+              ]);
+            }),
             const SizedBox(height: 12),
             FilledButton(
               onPressed: () async {

@@ -91,7 +91,7 @@ class _MentorPageState extends State<MentorPage> {
         }
       }
       if (turns.first['role'] != 'user') turns.removeAt(0);
-      final out = await claudeAsk(
+      final out = await aiAsk(
         settings: app.settings,
         system: '$_system\n\n--- حالة الطالب الآن ---\n${mentorContext()}',
         messages: turns,
@@ -111,11 +111,11 @@ class _MentorPageState extends State<MentorPage> {
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(listenable: app, builder: (c, _) {
-        if (app.settings.apiKey.trim().isEmpty) {
+        if (!aiReady(app.settings)) {
           return const EmptyNote(
             icon: Icons.auto_awesome,
             title: 'فعّل المرشد الذكي',
-            body: 'أضف مفتاح Claude من الإعدادات (أيقونة الترس بالأعلى). يبقى المفتاح على هاتفك فقط.',
+            body: 'اختر خدمة ذكاء اصطناعي وأضف مفتاحها من الإعدادات (أيقونة الترس). فيه خيارات مجانية مثل Gemini وGroq. يبقى المفتاح على هاتفك فقط.',
           );
         }
         return Column(children: [

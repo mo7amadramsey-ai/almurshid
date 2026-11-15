@@ -59,6 +59,8 @@ class Settings {
   bool tired; // "I'm tired": capacity x 0.75
   String apiKey;
   String model;
+  String provider; // id from aiProviders
+  String baseUrl; // empty = provider default
   Settings({
     DateTime? deadline,
     List<double>? hours,
@@ -66,7 +68,9 @@ class Settings {
     this.videoFactor = 1.5,
     this.tired = false,
     this.apiKey = '',
-    this.model = 'claude-sonnet-5-5',
+    this.model = '',
+    this.provider = 'gemini',
+    this.baseUrl = '',
   })  : deadline = deadline ?? DateTime(2026, 12, 2),
         hours = hours ?? List<double>.filled(7, 4.0);
 
@@ -78,6 +82,8 @@ class Settings {
         'tired': tired,
         'apiKey': apiKey,
         'model': model,
+        'provider': provider,
+        'baseUrl': baseUrl,
       };
 
   factory Settings.fromJson(Map<String, dynamic> j) {
@@ -89,7 +95,9 @@ class Settings {
       videoFactor: (j['videoFactor'] as num?)?.toDouble() ?? 1.5,
       tired: (j['tired'] as bool?) ?? false,
       apiKey: (j['apiKey'] as String?) ?? '',
-      model: (j['model'] as String?) ?? 'claude-sonnet-5-5',
+      model: (j['model'] as String?) ?? '',
+      provider: (j['provider'] as String?) ?? 'anthropic',
+      baseUrl: (j['baseUrl'] as String?) ?? '',
     );
   }
 }

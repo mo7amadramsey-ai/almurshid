@@ -1,43 +1,94 @@
-// AI layer: talks to the Claude API directly from the phone with the user's own key.
+// AI layer: talks to any provider (Gemini, Groq, OpenRouter, OpenAI, Claude, or a custom/local server) directly from the phone with the user's own key.
 // The key lives only in the app's private storage on the phone; it is never in the repository.
 import 'dart:convert';
 import 'dart:io';
 import 'planner.dart';
 import 'study_models.dart';
 
-Future<String> claudeAsk({
+class AiProvider {
+  final String id, name, baseUrl, model, keyHint;
+  final bool anthropic; // true: Anthropic Messages API; false: OpenAI-compatible chat/completions
+  final bool needsKey;
+  const AiProvider(this.id, this.name, this.baseUrl, this.model, this.keyHint,
+      {this.anthropic = false, this.needsKey = true});
+}
+
+/// Every provider except Claude speaks the OpenAI-compatible protocol, so any new service
+/// (or a local server) works through the "custom" entry with its own base URL.
+const aiProviders = <AiProvider>[
+  AiProvider('gemini', 'Google Gemini (مفتاح مجاني)', 'https://generativelanguage.googleapis.com/v1beta/openai',
+      'gemini-2.5-flash', 'من aistudio.google.com/apikey'),
+  AiProvider('groq', 'Groq (مجاني)', 'https://api.groq.com/openai/v1', 'llama-3.3-70b-versatile', 'من console.groq.com/keys'),
+  AiProvider('openrouter', 'OpenRouter (نماذج مجانية)', 'https://openrouter.ai/api/v1', 'meta-llama/llama-3.3-70b-instruct:free',
+      'من openrouter.ai/keys'),
+  AiProvider('openai', 'ChatGPT / OpenAI', 'https://api.openai.com/v1', 'gpt-4o-mini', 'من platform.openai.com/api-keys'),
+  AiProvider('anthropic', 'Claude / Anthropic', 'https://api.anthropic.com/v1/messages', 'claude-sonnet-5-5',
+      'من console.anthropic.com', anthropic: true),
+  AiProvider('custom', 'مخصص (أي خدمة متوافقة مع OpenAI، أو Ollama على جهازك)', 'http://192.168.1.10:11434/v1', 'llama3.1', 'اتركه فارغاً لو لا يحتاج مفتاحاً',
+      needsKey: false),
+];
+
+AiProvider providerById(String id) => aiProviders.firstWhere((p) => p.id == id, orElse: () => aiProviders.first);
+
+bool aiReady(Settings s) {
+  final p = providerById(s.provider);
+  return s.apiKey.trim().isNotEmpty || !p.needsKey;
+}
+
+Future<String> aiAsk({
   required Settings settings,
   required String system,
   required List<Map<String, String>> messages,
   int maxTokens = 1500,
 }) async {
-  if (settings.apiKey.trim().isEmpty) throw 'أضف مفتاح Claude من الإعدادات أولاً';
+  final p = providerById(settings.provider);
+  if (!aiReady(settings)) throw 'أضف مفتاح الذكاء الاصطناعي من الإعدادات أولاً';
+  final base = (settings.baseUrl.trim().isEmpty ? p.baseUrl : settings.baseUrl.trim()).replaceAll(RegExp(r'/+$'), '');
+  final model = settings.model.trim().isEmpty ? p.model : settings.model.trim();
+  final key = settings.apiKey.trim();
   final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
   try {
-    final req = await client.postUrl(Uri.parse('https://api.anthropic.com/v1/messages'));
+    late final HttpClientRequest req;
+    late final String body;
+    if (p.anthropic) {
+      final url = base.endsWith('/messages') ? base : '$base/messages';
+      req = await client.postUrl(Uri.parse(url));
+      req.headers.set('x-api-key', key);
+      req.headers.set('anthropic-version', '2023-06-01');
+      body = jsonEncode({'model': model, 'max_tokens': maxTokens, 'system': system, 'messages': messages});
+    } else {
+      req = await client.postUrl(Uri.parse('$base/chat/completions'));
+      if (key.isNotEmpty) req.headers.set('authorization', 'Bearer $key');
+      body = jsonEncode({
+        'model': model,
+        'max_tokens': maxTokens,
+        'messages': [
+          {'role': 'system', 'content': system},
+          ...messages,
+        ],
+      });
+    }
     req.headers.set('content-type', 'application/json');
-    req.headers.set('x-api-key', settings.apiKey.trim());
-    req.headers.set('anthropic-version', '2023-06-01');
-    req.add(utf8.encode(jsonEncode({
-      'model': settings.model,
-      'max_tokens': maxTokens,
-      'system': system,
-      'messages': messages,
-    })));
+    req.add(utf8.encode(body));
     final res = await req.close().timeout(const Duration(seconds: 90));
     final text = await res.transform(utf8.decoder).join();
     if (res.statusCode != 200) {
       var msg = text;
       try {
-        msg = (jsonDecode(text) as Map<String, dynamic>)['error']['message'] as String;
+        final e = (jsonDecode(text) as dynamic);
+        final err = e is List ? e.first['error'] : e['error'];
+        msg = err is Map ? '${err['message']}' : '$err';
       } catch (_) {}
       throw 'خطأ ${res.statusCode}: $msg';
     }
     final j = jsonDecode(text) as Map<String, dynamic>;
-    return (j['content'] as List)
-        .where((c) => (c as Map)['type'] == 'text')
-        .map((c) => (c as Map)['text'] as String)
-        .join('\n');
+    if (p.anthropic) {
+      return (j['content'] as List)
+          .where((c) => (c as Map)['type'] == 'text')
+          .map((c) => (c as Map)['text'] as String)
+          .join('\n');
+    }
+    return ((j['choices'] as List).first as Map)['message']['content'] as String;
   } finally {
     client.close();
   }
@@ -74,7 +125,7 @@ Future<CourseAnalysis> analyzeCourse(Settings s, String courseTitle, List<Task> 
       '"minutes": {"رقم العنصر": دقائق الدراسة الفعلية}}\n'
       'قدّر الدقائق للمستندات والصفحات والتكاليف والاختبارات حسب عنوانها. '
       'لا تقدّر مدة أي فيديو لا تعرف مدته، واترك رقمه خارج القائمة. اجعل الأرقام من مضاعفات 5.';
-  final out = await claudeAsk(settings: s, system: system, messages: [
+  final out = await aiAsk(settings: s, system: system, messages: [
     {'role': 'user', 'content': user}
   ]);
   final j = _extractJson(out) as Map<String, dynamic>;
