@@ -1,5 +1,6 @@
 // AI layer: talks to any provider (Gemini, Groq, OpenRouter, OpenAI, Claude, or a custom/local server) directly from the phone with the user's own key.
 // The key lives only in the app's private storage on the phone; it is never in the repository.
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'planner.dart';
@@ -45,7 +46,8 @@ Future<String> aiAsk({
   if (!aiReady(settings)) throw 'أضف مفتاح الذكاء الاصطناعي من الإعدادات أولاً';
   final base = (settings.baseUrl.trim().isEmpty ? p.baseUrl : settings.baseUrl.trim()).replaceAll(RegExp(r'/+$'), '');
   final model = settings.model.trim().isEmpty ? p.model : settings.model.trim();
-  final key = settings.apiKey.trim();
+  // Pasted keys often carry spaces/line breaks/invisible chars; strip them.
+  final key = settings.apiKey.replaceAll(RegExp(r'[\s\u200B-\u200F\u202A-\u202E\uFEFF]'), '');
   final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
   try {
     late final HttpClientRequest req;
@@ -59,9 +61,12 @@ Future<String> aiAsk({
     } else {
       req = await client.postUrl(Uri.parse('$base/chat/completions'));
       if (key.isNotEmpty) req.headers.set('authorization', 'Bearer $key');
+      // Gemini 2.5 thinks first; thinking tokens count against max_tokens, so a small limit
+      // returns empty content (null). Leave headroom.
+      final limit = p.id == 'gemini' ? maxTokens + 6000 : maxTokens;
       body = jsonEncode({
         'model': model,
-        'max_tokens': maxTokens,
+        'max_tokens': limit,
         'messages': [
           {'role': 'system', 'content': system},
           ...messages,
@@ -73,13 +78,20 @@ Future<String> aiAsk({
     final res = await req.close().timeout(const Duration(seconds: 90));
     final text = await res.transform(utf8.decoder).join();
     if (res.statusCode != 200) {
-      var msg = text;
+      var msg = text.length > 300 ? text.substring(0, 300) : text;
       try {
         final e = (jsonDecode(text) as dynamic);
         final err = e is List ? e.first['error'] : e['error'];
         msg = err is Map ? '${err['message']}' : '$err';
       } catch (_) {}
-      throw 'خطأ ${res.statusCode}: $msg';
+      final hint = switch (res.statusCode) {
+        400 => ' (تأكد من اسم النموذج ومن المفتاح)',
+        401 || 403 => ' (المفتاح مرفوض: انسخه من جديد من ${p.keyHint})',
+        404 => ' (اسم النموذج أو العنوان غير صحيح)',
+        429 => ' (تجاوزت الحد المجاني: انتظر دقيقة أو بدّل النموذج)',
+        _ => '',
+      };
+      throw 'خطأ ${res.statusCode}: $msg$hint';
     }
     final j = jsonDecode(text) as Map<String, dynamic>;
     if (p.anthropic) {
@@ -88,7 +100,20 @@ Future<String> aiAsk({
           .map((c) => (c as Map)['text'] as String)
           .join('\n');
     }
-    return ((j['choices'] as List).first as Map)['message']['content'] as String;
+    final choices = j['choices'] as List?;
+    if (choices == null || choices.isEmpty) throw 'ردّ فارغ من ${p.name}';
+    final c0 = choices.first as Map;
+    final content = (c0['message'] as Map?)?['content'];
+    if (content is! String || content.trim().isEmpty) {
+      throw 'النموذج لم يُرجع نصاً (السبب: ${c0['finish_reason']}). جرّب نموذجاً آخر من الإعدادات.';
+    }
+    return content;
+  } on SocketException {
+    throw 'تعذّر الاتصال بالخادم: تأكد من الإنترنت (أو أوقف VPN) ثم أعد المحاولة';
+  } on HandshakeException {
+    throw 'فشل الاتصال الآمن: تأكد من تاريخ ووقت الهاتف ومن الإنترنت';
+  } on TimeoutException {
+    throw 'انتهت مهلة الاتصال: الشبكة بطيئة، أعد المحاولة';
   } finally {
     client.close();
   }
