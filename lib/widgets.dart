@@ -53,7 +53,7 @@ class EmptyNote extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(28),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(icon, size: 52, color: kBrown),
+            Icon(icon, size: 52, color: kMoss),
             const SizedBox(height: 14),
             Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
             const SizedBox(height: 8),

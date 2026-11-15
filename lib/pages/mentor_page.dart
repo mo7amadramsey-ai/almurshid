@@ -139,7 +139,7 @@ class _MentorPageState extends State<MentorPage> {
                     padding: const EdgeInsets.all(16),
                     itemCount: msgs.length + (busy ? 1 : 0),
                     itemBuilder: (c, i) {
-                      if (i == msgs.length) return const Padding(padding: EdgeInsets.all(8), child: Align(alignment: AlignmentDirectional.centerStart, child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: kOlive))));
+                      if (i == msgs.length) return const Padding(padding: EdgeInsets.all(8), child: Align(alignment: AlignmentDirectional.centerStart, child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: kForest))));
                       final m = msgs[i];
                       return Align(
                         alignment: m.user ? AlignmentDirectional.centerEnd : AlignmentDirectional.centerStart,
@@ -148,11 +148,11 @@ class _MentorPageState extends State<MentorPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.82),
                           decoration: BoxDecoration(
-                            color: m.user ? kOlive : kSurface,
+                            color: m.user ? kForest : kSurface,
                             borderRadius: BorderRadius.circular(18),
                             border: m.user ? null : Border.all(color: kOutline),
                           ),
-                          child: SelectableText(m.text, style: TextStyle(height: 1.55, color: m.user ? Colors.white : kBrownDark)),
+                          child: SelectableText(m.text, style: TextStyle(height: 1.55, color: m.user ? Colors.white : kInk)),
                         ),
                       );
                     },
@@ -182,7 +182,7 @@ class _MentorPageState extends State<MentorPage> {
                 ),
                 const SizedBox(width: 8),
                 IconButton.filled(
-                  style: IconButton.styleFrom(backgroundColor: kOlive),
+                  style: IconButton.styleFrom(backgroundColor: kForest),
                   onPressed: busy ? null : () => _send(ctrl.text),
                   icon: const Icon(Icons.send),
                 ),

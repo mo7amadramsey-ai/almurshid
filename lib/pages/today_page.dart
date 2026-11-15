@@ -15,7 +15,7 @@ class TodayPage extends StatelessWidget {
   Widget build(BuildContext context) => ListenableBuilder(listenable: app, builder: (c, _) => _body(c));
 
   Widget _body(BuildContext context) {
-    if (!app.loaded) return const Center(child: CircularProgressIndicator(color: kOlive));
+    if (!app.loaded) return const Center(child: CircularProgressIndicator(color: kForest));
     final tree = app.tree;
     final plan = app.plan;
     if (tree == null || plan == null) {
@@ -42,7 +42,7 @@ class TodayPage extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Icon(r.feasible ? Icons.check_circle_outline : Icons.warning_amber_rounded,
-                color: r.feasible ? kOlive : const Color(0xFFB5602E)),
+                color: r.feasible ? kForest : const Color(0xFFB5602E)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -59,7 +59,7 @@ class TodayPage extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
-                value: r.progress, minHeight: 9, color: kOlive, backgroundColor: kSurface2),
+                value: r.progress, minHeight: 9, color: kForest, backgroundColor: kSurface2),
           ),
           const SizedBox(height: 8),
           Text('أنجزت ${(r.progress * 100).round()}%  ·  المتبقي ${fmtMin(r.totalMin)}',
@@ -91,12 +91,12 @@ class TodayPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(children: [
                   Icon(kindIcon(ItemKind.values.firstWhere((k) => k.name == e.kind, orElse: () => ItemKind.other)),
-                      size: 20, color: kOlive),
+                      size: 20, color: kForest),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(e.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-                      Text(e.course, style: const TextStyle(fontSize: 12, color: kBrown)),
+                      Text(e.course, style: const TextStyle(fontSize: 12, color: kMoss)),
                     ]),
                   ),
                 ]),
@@ -104,14 +104,14 @@ class TodayPage extends StatelessWidget {
             if (news.added.length > 8)
               Align(
                 alignment: AlignmentDirectional.centerStart,
-                child: Text('و ${news.added.length - 8} عناصر أخرى', style: const TextStyle(color: kBrown)),
+                child: Text('و ${news.added.length - 8} عناصر أخرى', style: const TextStyle(color: kMoss)),
               ),
           ]),
         ),
       ] else if (news != null && !news.first)
         const Padding(
           padding: EdgeInsets.only(top: 14),
-          child: Text('لا جديد في مودل منذ آخر استيراد.', style: TextStyle(color: kBrown)),
+          child: Text('لا جديد في مودل منذ آخر استيراد.', style: TextStyle(color: kMoss)),
         ),
 
       // ---- exams
@@ -125,7 +125,7 @@ class TodayPage extends StatelessWidget {
               child: Row(children: [
                 Expanded(child: Text(e.key.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700))),
                 Text('${fmtDm(e.value)}  ·  ${dayDiff(now, e.value) < 0 ? 'فات' : 'بعد ${dayDiff(now, e.value)} يوم'}',
-                    style: const TextStyle(color: kBrown)),
+                    style: const TextStyle(color: kMoss)),
               ]),
             ),
           ),
@@ -133,7 +133,7 @@ class TodayPage extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.only(top: 16),
           child: Text('حدّد موعد امتحان كل مادة من تبويب «المواد» ليبني المرشد خطتك على مواعيدك الحقيقية.',
-              style: TextStyle(color: kBrown, height: 1.5)),
+              style: TextStyle(color: kMoss, height: 1.5)),
         ),
     ]);
   }
@@ -151,11 +151,11 @@ class _SlotTile extends StatelessWidget {
         decoration: cardBox(18),
         child: CheckboxListTile(
           value: t.done,
-          activeColor: kOlive,
+          activeColor: kForest,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           controlAffinity: ListTileControlAffinity.leading,
           onChanged: (_) => app.toggle(t),
-          secondary: Icon(kindIcon(t.kind), color: kBrown),
+          secondary: Icon(kindIcon(t.kind), color: kMoss),
           title: Text(t.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

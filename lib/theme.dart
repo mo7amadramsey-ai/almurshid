@@ -1,40 +1,42 @@
 import 'package:flutter/material.dart';
 
-// Calm palette: light brown + beige + olive
+// Al-Murshid identity: moss / forest green + beige + sand, gold accent
 const kBg = Color(0xFFF4ECDC);       // beige
-const kSurface = Color(0xFFFBF6EA);  // light beige card
-const kSurface2 = Color(0xFFEADFC8); // deeper beige
-const kBrown = Color(0xFFA9855F);    // light brown (primary)
-const kBrownDark = Color(0xFF4B3B2A);// text
-const kOlive = Color(0xFF7B8450);    // olive accent
-const kOutline = Color(0xFFDCCFB4);
+const kSurface = Color(0xFFFBF7EC);  // light beige card
+const kSurface2 = Color(0xFFE6D9BC); // sand
+const kMoss = Color(0xFF5E7036);    // moss green (primary)
+const kInk = Color(0xFF283420);     // deep green-black text
+const kForest = Color(0xFF4F6B2E);  // forest green accent
+const kOutline = Color(0xFFD8CCA8);
+const kGold = Color(0xFFD4B25E);
 
 ThemeData buildTheme() {
-  final scheme = ColorScheme.fromSeed(seedColor: kBrown, brightness: Brightness.light).copyWith(
-    primary: kBrown,
+  final scheme = ColorScheme.fromSeed(seedColor: kMoss, brightness: Brightness.light).copyWith(
+    primary: kMoss,
     onPrimary: Colors.white,
-    secondary: kOlive,
+    secondary: kForest,
     onSecondary: Colors.white,
     surface: kSurface,
-    onSurface: kBrownDark,
+    onSurface: kInk,
     outline: kOutline,
   );
   final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(22));
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    scaffoldBackgroundColor: kBg,
+    scaffoldBackgroundColor: Colors.transparent, // AppBackdrop paints the page
+    navigationBarTheme: const NavigationBarThemeData(indicatorColor: kSurface2),
     appBarTheme: const AppBarTheme(
-      backgroundColor: kBg,
-      foregroundColor: kBrownDark,
+      backgroundColor: Colors.transparent,
+      foregroundColor: kInk,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
-      titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: kBrownDark),
+      titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: kInk),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: kOlive,
+        backgroundColor: kForest,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
         shape: shape,
@@ -43,7 +45,7 @@ ThemeData buildTheme() {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: kBrownDark,
+        foregroundColor: kInk,
         side: const BorderSide(color: kOutline),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         shape: shape,
@@ -51,7 +53,7 @@ ThemeData buildTheme() {
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: kBrownDark,
+      backgroundColor: kInk,
       contentTextStyle: const TextStyle(color: Colors.white),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     ),
@@ -64,3 +66,17 @@ BoxDecoration cardBox([double r = 18]) => BoxDecoration(
       borderRadius: BorderRadius.circular(r),
       border: Border.all(color: kOutline),
     );
+
+/// Page background: beige with a faint eight-point-star lattice (assets/bg_tile.png)
+class AppBackdrop extends StatelessWidget {
+  final Widget child;
+  const AppBackdrop({super.key, required this.child});
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: const BoxDecoration(
+          color: kBg,
+          image: DecorationImage(image: AssetImage('assets/bg_tile.png'), repeat: ImageRepeat.repeat, scale: 2.5),
+        ),
+        child: child,
+      );
+}

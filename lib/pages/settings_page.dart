@@ -44,7 +44,7 @@ class _SettingsPageState extends State<SettingsPage> {
           child: Column(children: [
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              activeColor: kOlive,
+              activeColor: kForest,
               title: const Text('أنا متعب هذه الفترة'),
               subtitle: const Text('يخفض ساعات كل يوم 25% حتى لا تُحمَّل أكثر من طاقتك'),
               value: s.tired,
@@ -64,7 +64,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     min: 0,
                     max: 10,
                     divisions: 20,
-                    activeColor: kOlive,
+                    activeColor: kForest,
                     onChanged: (v) {
                       s.hours[i] = v;
                       setState(() {});
@@ -121,7 +121,7 @@ class _SettingsPageState extends State<SettingsPage> {
               min: 1,
               max: 2.5,
               divisions: 15,
-              activeColor: kOlive,
+              activeColor: kForest,
               onChanged: (v) {
                 s.videoFactor = v;
                 setState(() {});
@@ -200,7 +200,7 @@ class _SettingsPageState extends State<SettingsPage> {
         Panel(
           child: ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.account_tree_outlined, color: kBrown),
+            leading: const Icon(Icons.account_tree_outlined, color: kMoss),
             title: const Text('شجرة المواد الخام'),
             subtitle: const Text('للفحص ونسخ الشجرة كنص'),
             onTap: app.tree == null ? null : () => Navigator.push(context, MaterialPageRoute(builder: (_) => TreePage(tree: app.tree!))),

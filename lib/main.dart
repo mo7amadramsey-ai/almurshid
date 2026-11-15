@@ -13,7 +13,8 @@ class MurshidApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: buildTheme(),
         // Arabic-first app: force right-to-left layout
-        builder: (context, child) => Directionality(textDirection: TextDirection.rtl, child: child!),
+        builder: (context, child) =>
+            Directionality(textDirection: TextDirection.rtl, child: AppBackdrop(child: child!)),
         home: const Shell(),
       );
 }

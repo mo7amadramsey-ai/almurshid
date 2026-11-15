@@ -194,7 +194,7 @@ class _SyncPageState extends State<SyncPage> {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const LinearProgressIndicator(color: kOlive, backgroundColor: kSurface2),
+        const LinearProgressIndicator(color: kForest, backgroundColor: kSurface2),
         const SizedBox(height: 22),
         Text('تمت قراءة ${p?.fetched ?? 0} صفحة', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
@@ -205,7 +205,7 @@ class _SyncPageState extends State<SyncPage> {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           textDirection: TextDirection.ltr,
-          style: const TextStyle(fontSize: 11.5, color: kBrown),
+          style: const TextStyle(fontSize: 11.5, color: kMoss),
         ),
       ]),
     );

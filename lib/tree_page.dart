@@ -59,7 +59,7 @@ class TreePage extends StatelessWidget {
         Wrap(spacing: 8, runSpacing: 8, children: [
           for (final e in counts)
             Chip(
-              avatar: Icon(kindIcon(e.key), size: 18, color: kOlive),
+              avatar: Icon(kindIcon(e.key), size: 18, color: kForest),
               label: Text('${kindLabels[e.key]} ${e.value}'),
               backgroundColor: kSurface2,
               side: BorderSide.none,
@@ -80,7 +80,7 @@ class TreePage extends StatelessWidget {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          leading: const Icon(Icons.menu_book, color: kOlive),
+          leading: const Icon(Icons.menu_book, color: kForest),
           title: Text(c.title, style: const TextStyle(fontWeight: FontWeight.w700)),
           subtitle: Text('${c.sections.length} أقسام · $n عنصر'),
           children: [for (final s in c.sections) _sectionTile(context, s)],
@@ -93,14 +93,14 @@ class TreePage extends StatelessWidget {
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           tilePadding: const EdgeInsetsDirectional.only(start: 22, end: 14),
-          title: Text(s.title, style: const TextStyle(fontSize: 14.5, color: kBrown, fontWeight: FontWeight.w700)),
+          title: Text(s.title, style: const TextStyle(fontSize: 14.5, color: kMoss, fontWeight: FontWeight.w700)),
           children: [for (final i in s.items) _itemTile(context, i, 0)],
         ),
       );
 
   Widget _itemTile(BuildContext context, Item i, int depth) {
     final pad = EdgeInsetsDirectional.only(start: 34.0 + depth * 18, end: 12);
-    final leading = Icon(kindIcon(i.kind), size: 22, color: kOlive);
+    final leading = Icon(kindIcon(i.kind), size: 22, color: kForest);
     if (i.children.isEmpty) {
       return ListTile(
         dense: true,
@@ -129,7 +129,7 @@ class TreePage extends StatelessWidget {
         child: Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
-            leading: const Icon(Icons.warning_amber_rounded, color: kBrown),
+            leading: const Icon(Icons.warning_amber_rounded, color: kMoss),
             title: Text('أخطاء الزحف (${tree.errors.length})'),
             children: [
               for (final e in tree.errors.take(100))

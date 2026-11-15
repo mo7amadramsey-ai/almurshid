@@ -31,17 +31,17 @@ class CoursesPage extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: LinearProgressIndicator(
-                          value: app.courseProgress(course.id), minHeight: 7, color: kOlive, backgroundColor: kSurface2),
+                          value: app.courseProgress(course.id), minHeight: 7, color: kForest, backgroundColor: kSurface2),
                     ),
                     const SizedBox(height: 8),
                     Wrap(spacing: 14, runSpacing: 4, children: [
-                      Text('متبقٍ ${fmtMin(app.remainingMin(course.id))}', style: const TextStyle(color: kBrown)),
-                      Text('صعوبة ${app.data.cfg(course.id).difficulty}/5', style: const TextStyle(color: kBrown)),
+                      Text('متبقٍ ${fmtMin(app.remainingMin(course.id))}', style: const TextStyle(color: kMoss)),
+                      Text('صعوبة ${app.data.cfg(course.id).difficulty}/5', style: const TextStyle(color: kMoss)),
                       Text(
                         app.data.cfg(course.id).exam == null
                             ? 'بلا موعد امتحان'
                             : 'امتحان ${fmtDm(app.data.cfg(course.id).exam!)} (بعد ${dayDiff(now, app.data.cfg(course.id).exam!)} يوم)',
-                        style: TextStyle(color: app.data.cfg(course.id).exam == null ? const Color(0xFF9A4A1F) : kBrown),
+                        style: TextStyle(color: app.data.cfg(course.id).exam == null ? const Color(0xFF9A4A1F) : kMoss),
                       ),
                     ]),
                   ]),
@@ -122,7 +122,7 @@ class _CoursePageState extends State<CoursePage> {
             sec = t.section;
             rows.add(Padding(
               padding: const EdgeInsets.fromLTRB(4, 16, 4, 6),
-              child: Text(sec.isEmpty ? 'عام' : sec, style: const TextStyle(fontWeight: FontWeight.w800, color: kBrown)),
+              child: Text(sec.isEmpty ? 'عام' : sec, style: const TextStyle(fontWeight: FontWeight.w800, color: kMoss)),
             ));
           }
           rows.add(Container(
@@ -130,7 +130,7 @@ class _CoursePageState extends State<CoursePage> {
             decoration: cardBox(14),
             child: ListTile(
               dense: true,
-              leading: Checkbox(value: t.done, activeColor: kOlive, onChanged: (_) => app.toggle(t)),
+              leading: Checkbox(value: t.done, activeColor: kForest, onChanged: (_) => app.toggle(t)),
               title: Text(t.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -173,7 +173,7 @@ class _CoursePageState extends State<CoursePage> {
                   min: 1,
                   max: 5,
                   divisions: 4,
-                  activeColor: kOlive,
+                  activeColor: kForest,
                   onChanged: (v) {
                     cfg.difficulty = v.round();
                     app.commit();
@@ -181,7 +181,7 @@ class _CoursePageState extends State<CoursePage> {
                 ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.event_outlined, color: kBrown),
+                  leading: const Icon(Icons.event_outlined, color: kMoss),
                   title: Text(cfg.exam == null ? 'حدّد موعد الامتحان' : 'الامتحان: ${fmtDm(cfg.exam!)}/${cfg.exam!.year}'),
                   subtitle: const Text('تنتهي دراسة المادة قبله بيوم'),
                   trailing: cfg.exam == null

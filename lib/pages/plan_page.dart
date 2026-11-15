@@ -51,17 +51,17 @@ class _DayCard extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Text('${weekdayNames[day.date.weekday - 1]}  ${fmtDm(day.date)}',
-                style: TextStyle(fontWeight: FontWeight.w800, color: isToday ? kOlive : kBrownDark)),
-            if (isToday) const Padding(padding: EdgeInsetsDirectional.only(start: 8), child: Text('اليوم', style: TextStyle(color: kOlive))),
+                style: TextStyle(fontWeight: FontWeight.w800, color: isToday ? kForest : kInk)),
+            if (isToday) const Padding(padding: EdgeInsetsDirectional.only(start: 8), child: Text('اليوم', style: TextStyle(color: kForest))),
             const Spacer(),
-            Text(fmtMin(day.used), style: const TextStyle(color: kBrown)),
+            Text(fmtMin(day.used), style: const TextStyle(color: kMoss)),
           ]),
           const Divider(height: 18),
           for (final s in day.slots)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(children: [
-                Icon(kindIcon(s.task.kind), size: 18, color: s.task.done ? kOlive : kBrown),
+                Icon(kindIcon(s.task.kind), size: 18, color: s.task.done ? kForest : kMoss),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text('${s.task.title}\n${s.task.courseTitle}',
@@ -69,7 +69,7 @@ class _DayCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(height: 1.3, decoration: s.task.done ? TextDecoration.lineThrough : null)),
                 ),
-                Text(fmtMin(s.minutes), style: const TextStyle(color: kBrown)),
+                Text(fmtMin(s.minutes), style: const TextStyle(color: kMoss)),
               ]),
             ),
         ]),
