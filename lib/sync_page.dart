@@ -7,7 +7,8 @@ import 'crawler/parser.dart';
 import 'crawler/webview_fetcher.dart';
 import 'storage.dart';
 import 'theme.dart';
-import 'tree_page.dart';
+import 'study_models.dart';
+import 'study_store.dart';
 
 enum _Phase { login, discover, crawl, error }
 
@@ -127,9 +128,11 @@ class _SyncPageState extends State<SyncPage> {
       final tree = await Crawler(fetcher.fetch).crawl(links, onProgress: (p) {
         if (mounted) setState(() => progress = p);
       });
+      final old = await loadTree();
       await saveTree(tree);
+      await saveNews(computeNews(old, tree));
       if (!mounted) return;
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => TreePage(tree: tree)));
+      Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
       setState(() {

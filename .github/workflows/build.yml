@@ -20,7 +20,7 @@ jobs:
       - run: flutter pub get
       # Unit tests for the parser + crawler (pure Dart, no device needed)
       - name: Test
-        run: flutter test test/parser_test.dart test/crawler_test.dart 2>&1 | tee test.log
+        run: flutter test 2>&1 | tee test.log
         shell: bash
       - name: Build APK
         run: flutter build apk --release --build-number=${{ github.run_number }} 2>&1 | tee build.log
