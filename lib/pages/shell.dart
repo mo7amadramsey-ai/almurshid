@@ -6,6 +6,7 @@ import 'courses_page.dart';
 import 'mentor_page.dart';
 import 'plan_page.dart';
 import 'settings_page.dart';
+import 'strict_page.dart';
 import 'today_page.dart';
 
 class Shell extends StatefulWidget {
@@ -21,6 +22,7 @@ class _ShellState extends State<Shell> {
   void initState() {
     super.initState();
     app.init();
+    WidgetsBinding.instance.addPostFrameCallback((_) => resumeStrictIfAny(context));
   }
 
   Future<void> _sync() async {

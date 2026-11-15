@@ -1,5 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- Android 12+: hides other apps' floating windows over this app during a strict session -->
+    <uses-permission android:name="android.permission.HIDE_OVERLAY_WINDOWS"/>
+
+    <!-- LockService looks up the phone's dialer and contacts apps so calls stay possible -->
+    <queries>
+        <intent><action android:name="android.intent.action.DIAL"/></intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="content" android:host="contacts"/>
+        </intent>
+    </queries>
 
     <application
         android:label="المرشد الدراسي"
@@ -8,7 +20,9 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
+            android:resizeableActivity="false"
+            android:supportsPictureInPicture="false"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
@@ -21,6 +35,34 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!-- Device admin receiver: only needed to become Device Owner (true kiosk lock, optional) -->
+        <receiver
+            android:name=".FocusAdmin"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin"/>
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
+            </intent-filter>
+        </receiver>
+
+        <!-- Strict-session enforcer: the user switches it on once in Accessibility settings -->
+        <service
+            android:name=".LockService"
+            android:exported="true"
+            android:label="المرشد الدراسي"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_config"/>
+        </service>
+
         <meta-data android:name="flutterEmbedding" android:value="2"/>
     </application>
 </manifest>

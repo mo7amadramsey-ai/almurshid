@@ -5,6 +5,7 @@ import '../planner.dart';
 import '../study_models.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import 'strict_page.dart';
 
 class TodayPage extends StatelessWidget {
   final VoidCallback onSync;
@@ -149,7 +150,8 @@ class _SlotTile extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Container(
         decoration: cardBox(18),
-        child: CheckboxListTile(
+        child: Row(children: [
+          Expanded(child: CheckboxListTile(
           value: t.done,
           activeColor: kForest,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
@@ -163,6 +165,14 @@ class _SlotTile extends StatelessWidget {
           subtitle: Text('${t.courseTitle}  ·  ${fmtMin(slot.minutes)}${slot.partial ? '  ·  جزء من المهمة' : ''}',
               maxLines: 1, overflow: TextOverflow.ellipsis),
         ),
+          ),
+          if (!t.done)
+            IconButton(
+              tooltip: 'جلسة صارمة',
+              icon: const Icon(Icons.lock_clock, color: kForest),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => StrictPage(task: t))),
+            ),
+        ]),
       ),
     );
   }
