@@ -2,6 +2,7 @@ import 'dart:async';
 import '../models.dart';
 import 'classify.dart';
 import 'parser.dart';
+import 'due.dart';
 
 /// What a fetch returns. [body] is null for non-HTML responses (files are never downloaded).
 class FetchResult {
@@ -153,6 +154,15 @@ class Crawler {
     }
   }
 
+  /// Reads the deadline printed on an assignment / quiz page (best effort, never fails the crawl)
+  Future<void> _readDue(Item item) async {
+    final u = Uri.tryParse(item.url);
+    if (u == null || !isMoodleHost(u.host) || !_visited.add(item.url)) return;
+    final r = await _get(item.url);
+    if (r == null || r.body == null) return;
+    item.due = parseDueDate(r.body!);
+  }
+
   /// Follows one item according to its kind (folders list files, pages list links, "file"/"url"
   /// activities are resolved to their real target). Other kinds are leaves.
   Future<void> _resolve(Item item, int depth) async {
@@ -164,6 +174,10 @@ class Crawler {
       case ItemKind.file:
       case ItemKind.link:
         break;
+      case ItemKind.assignment:
+      case ItemKind.quiz:
+        await _readDue(item);
+        return;
       default:
         return;
     }

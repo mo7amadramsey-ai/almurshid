@@ -21,14 +21,16 @@ class Item {
   String title;
   String url;
   ItemKind kind;
+  DateTime? due; // deadline read from the assignment / quiz page
   final List<Item> children;
-  Item({required this.title, required this.url, required this.kind, List<Item>? children})
+  Item({required this.title, required this.url, required this.kind, this.due, List<Item>? children})
       : children = children ?? [];
 
   Map<String, dynamic> toJson() => {
         'title': title,
         'url': url,
         'kind': kind.name,
+        if (due != null) 'due': due!.toIso8601String(),
         if (children.isNotEmpty) 'children': children.map((c) => c.toJson()).toList(),
       };
 
@@ -36,6 +38,7 @@ class Item {
         title: j['title'] as String,
         url: j['url'] as String,
         kind: ItemKind.values.firstWhere((k) => k.name == j['kind'], orElse: () => ItemKind.other),
+        due: j['due'] == null ? null : DateTime.tryParse(j['due'] as String),
         children: ((j['children'] as List?) ?? []).map((c) => Item.fromJson(c as Map<String, dynamic>)).toList(),
       );
 

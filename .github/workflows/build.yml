@@ -20,10 +20,10 @@ jobs:
       - run: flutter pub get
       # Unit tests for the parser + crawler (pure Dart, no device needed)
       - name: Test
-        run: flutter test test/parser_test.dart test/crawler_test.dart test/planner_test.dart test/ai_test.dart 2>&1 | tee test.log
+        run: flutter test test/parser_test.dart test/crawler_test.dart test/planner_test.dart test/due_test.dart test/ai_test.dart 2>&1 | tee test.log
         shell: bash
       - name: Build APK
-        run: flutter build apk --release --build-number=${{ github.run_number }} 2>&1 | tee build.log
+        run: flutter build apk --release --target-platform android-arm,android-arm64 --build-number=${{ github.run_number }} 2>&1 | tee build.log
         shell: bash
       # Re-sign with the PERMANENT key (stored in repo secrets) so every build can update the previous one.
       # Without this each CI run used a fresh random debug key -> "package appears invalid" on update.
@@ -39,6 +39,11 @@ jobs:
           "$AS" sign --ks /tmp/fl.jks --ks-key-alias almurshid --ks-pass env:KS_PASS --key-pass env:KS_PASS "$APK"
           "$AS" verify --print-certs "$APK" | head -3
           rm -f /tmp/fl.jks
+          # Fail the build (instead of shipping a broken file) if the signed APK is not valid
+          "$AS" verify --verbose "$APK" | grep -E "Verifies|v2|v3" | head -5
+          unzip -tq "$APK"
+          ( cd build/app/outputs/flutter-apk && sha256sum app-release.apk | cut -d' ' -f1 > sha.txt )
+          echo "SHA=$(cat build/app/outputs/flutter-apk/sha.txt)" >> $GITHUB_ENV
       # On failure, publish the error lines to a 'buildlog' branch so they can be read
       - name: Publish build log on failure
         if: failure()
@@ -66,3 +71,6 @@ jobs:
           name: المرشد الدراسي v1.0.${{ github.run_number }}
           files: build/app/outputs/flutter-apk/app-release.apk
           make_latest: true
+          body: |
+            SHA-256: `${{ env.SHA }}`
+            إذا فشل التثبيت (حزمة غير صالحة): أعد تنزيل الملف على واي فاي مستقر وقارن حجمه، واحذف أي نسخة قديمة من التطبيق أولاً.
