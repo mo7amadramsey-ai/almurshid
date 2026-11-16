@@ -30,7 +30,7 @@ class _ShellState extends State<Shell> {
   }
 
   Future<void> _sync() async {
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => const SyncPage()));
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => SyncPage()));
     await app.init();
   }
 
@@ -43,30 +43,28 @@ class _ShellState extends State<Shell> {
         actions: [
           IconButton(
             tooltip: 'التقويم',
-            icon: const Icon(Icons.calendar_month),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarPage())),
+            icon: Icon(Icons.calendar_month),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarPage())),
           ),
-          IconButton(tooltip: 'استيراد من مودل', icon: const Icon(Icons.sync), onPressed: _sync),
+          IconButton(tooltip: 'استيراد من مودل', icon: Icon(Icons.sync), onPressed: _sync),
           IconButton(
             tooltip: 'الإعدادات',
-            icon: const Icon(Icons.tune),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage())),
+            icon: Icon(Icons.tune),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SettingsPage())),
           ),
         ],
       ),
       body: IndexedStack(index: tab, children: [
         TodayPage(onSync: _sync, onPlan: () => setState(() => tab = 1)),
-        const PlanPage(),
-        const CoursesPage(),
-        const FollowPage(),
-        const MentorPage(),
+        PlanPage(),
+        CoursesPage(),
+        FollowPage(),
+        MentorPage(),
       ]),
       bottomNavigationBar: NavigationBar(
-        backgroundColor: kSurface,
-        indicatorColor: kBrownLight,
         selectedIndex: tab,
         onDestinationSelected: (i) => setState(() => tab = i),
-        destinations: const [
+        destinations: [
           NavigationDestination(icon: Icon(Icons.today_outlined), selectedIcon: Icon(Icons.today), label: 'اليوم'),
           NavigationDestination(icon: Icon(Icons.event_note_outlined), selectedIcon: Icon(Icons.event_note), label: 'الخطة'),
           NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'المواد'),

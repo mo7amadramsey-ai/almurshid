@@ -16,34 +16,34 @@ class CoursesPage extends StatelessWidget {
   Widget build(BuildContext context) => ListenableBuilder(listenable: app, builder: (c, _) {
         final t = app.tree;
         if (t == null) {
-          return const EmptyNote(icon: Icons.menu_book_outlined, title: 'لا مواد بعد', body: 'استورد موادك من مودل أولاً.');
+          return EmptyNote(icon: Icons.menu_book_outlined, title: 'لا مواد بعد', body: 'استورد موادك من مودل أولاً.');
         }
         final now = dOnly(DateTime.now());
-        return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 28), children: [
+        return ListView(padding: EdgeInsets.fromLTRB(16, 4, 16, 28), children: [
           for (final course in t.courses)
             Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: EdgeInsets.only(bottom: 10),
               child: InkWell(
                 borderRadius: BorderRadius.circular(20),
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CoursePage(course: course))),
                 child: Panel(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(course.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, height: 1.3)),
-                    const SizedBox(height: 10),
+                    Text(course.title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, height: 1.3)),
+                    SizedBox(height: 10),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: LinearProgressIndicator(
                           value: app.courseProgress(course.id), minHeight: 7, color: kForest, backgroundColor: kSurface2),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Wrap(spacing: 14, runSpacing: 4, children: [
-                      Text('متبقٍ ${fmtMin(app.remainingMin(course.id))}', style: const TextStyle(color: kMoss)),
-                      Text('صعوبة ${app.data.cfg(course.id).difficulty}/5', style: const TextStyle(color: kMoss)),
+                      Text('متبقٍ ${fmtMin(app.remainingMin(course.id))}', style: TextStyle(color: kMoss)),
+                      Text('صعوبة ${app.data.cfg(course.id).difficulty}/5', style: TextStyle(color: kMoss)),
                       Text(
                         app.data.cfg(course.id).exam == null
                             ? 'بلا موعد امتحان'
                             : 'امتحان ${fmtDm(app.data.cfg(course.id).exam!)} (بعد ${dayDiff(now, app.data.cfg(course.id).exam!)} يوم)',
-                        style: TextStyle(color: app.data.cfg(course.id).exam == null ? const Color(0xFF9A4A1F) : kMoss),
+                        style: TextStyle(color: app.data.cfg(course.id).exam == null ? kWarnText : kMoss),
                       ),
                     ]),
                   ]),
@@ -92,15 +92,15 @@ class _CoursePageState extends State<CoursePage> {
     final res = await showDialog<String>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('وقت دراسة هذا العنصر'),
+        title: Text('وقت دراسة هذا العنصر'),
         content: TextField(
           controller: ctrl,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(suffixText: 'دقيقة'),
+          decoration: InputDecoration(suffixText: 'دقيقة'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, ''), child: const Text('تقدير تلقائي')),
-          FilledButton(onPressed: () => Navigator.pop(c, ctrl.text), child: const Text('حفظ')),
+          TextButton(onPressed: () => Navigator.pop(c, ''), child: Text('تقدير تلقائي')),
+          FilledButton(onPressed: () => Navigator.pop(c, ctrl.text), child: Text('حفظ')),
         ],
       ),
     );
@@ -121,10 +121,10 @@ class _CoursePageState extends State<CoursePage> {
         for (final g in groupChapters(tasks, app.data.items)) {
           final doneN = g.tasks.where((t) => t.done).length;
           rows.add(Padding(
-            padding: const EdgeInsets.fromLTRB(4, 18, 4, 4),
+            padding: EdgeInsets.fromLTRB(4, 18, 4, 4),
             child: Row(children: [
-              Expanded(child: Text(g.label, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kForest))),
-              Text('$doneN/${g.tasks.length}', style: const TextStyle(color: kMoss)),
+              Expanded(child: Text(g.label, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kForest))),
+              Text('$doneN/${g.tasks.length}', style: TextStyle(color: kMoss)),
             ]),
           ));
           String? bucket;
@@ -133,12 +133,12 @@ class _CoursePageState extends State<CoursePage> {
           if (b != bucket) {
             bucket = b;
             rows.add(Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 4, 4),
-              child: Text(b, style: const TextStyle(fontWeight: FontWeight.w700, color: kMoss, fontSize: 12.5)),
+              padding: EdgeInsets.fromLTRB(8, 8, 4, 4),
+              child: Text(b, style: TextStyle(fontWeight: FontWeight.w700, color: kMoss, fontSize: 12.5)),
             ));
           }
           rows.add(Container(
-            margin: const EdgeInsets.only(bottom: 6),
+            margin: EdgeInsets.only(bottom: 6),
             decoration: cardBox(14),
             child: ListTile(
               dense: true,
@@ -160,15 +160,15 @@ class _CoursePageState extends State<CoursePage> {
         }
         return Scaffold(
           appBar: AppBar(title: Text(course.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
-          body: ListView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 28), children: [
+          body: ListView(padding: EdgeInsets.fromLTRB(16, 0, 16, 28), children: [
             Panel(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('الأولوية', style: TextStyle(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
+                Text('الأولوية', style: TextStyle(fontWeight: FontWeight.w700)),
+                SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
                   child: SegmentedButton<int>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(value: 1, label: Text('منخفضة')),
                       ButtonSegment(value: 2, label: Text('عادية')),
                       ButtonSegment(value: 3, label: Text('عالية')),
@@ -180,8 +180,8 @@ class _CoursePageState extends State<CoursePage> {
                     },
                   ),
                 ),
-                const SizedBox(height: 14),
-                Text('الصعوبة: ${cfg.difficulty}/5', style: const TextStyle(fontWeight: FontWeight.w700)),
+                SizedBox(height: 14),
+                Text('الصعوبة: ${cfg.difficulty}/5', style: TextStyle(fontWeight: FontWeight.w700)),
                 Slider(
                   value: cfg.difficulty.toDouble(),
                   min: 1,
@@ -195,13 +195,13 @@ class _CoursePageState extends State<CoursePage> {
                 ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.event_outlined, color: kMoss),
+                  leading: Icon(Icons.event_outlined, color: kMoss),
                   title: Text(cfg.exam == null ? 'حدّد موعد الامتحان' : 'الامتحان: ${fmtDm(cfg.exam!)}/${cfg.exam!.year}'),
-                  subtitle: const Text('تنتهي دراسة المادة قبله بيوم'),
+                  subtitle: Text('تنتهي دراسة المادة قبله بيوم'),
                   trailing: cfg.exam == null
                       ? null
                       : IconButton(
-                          icon: const Icon(Icons.close),
+                          icon: Icon(Icons.close),
                           onPressed: () {
                             cfg.exam = null;
                             app.commit();
@@ -214,22 +214,22 @@ class _CoursePageState extends State<CoursePage> {
                     }
                   },
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 FilledButton.icon(
                   onPressed: busy ? null : _analyze,
                   icon: busy
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.auto_awesome),
+                      ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : Icon(Icons.auto_awesome),
                   label: Text(busy ? 'جارٍ التحليل…' : 'حلّل المادة بالذكاء الاصطناعي'),
                 ),
                 if (cfg.aiNote.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Text(cfg.aiNote, style: const TextStyle(height: 1.6)),
+                  SizedBox(height: 12),
+                  Text(cfg.aiNote, style: TextStyle(height: 1.6)),
                 ],
               ]),
             ),
-            const Heading('عناصر الدراسة'),
-            if (tasks.isEmpty) const Text('لم أجد عناصر للدراسة في هذه المادة.'),
+            Heading('عناصر الدراسة'),
+            if (tasks.isEmpty) Text('لم أجد عناصر للدراسة في هذه المادة.'),
             ...rows,
           ]),
         );

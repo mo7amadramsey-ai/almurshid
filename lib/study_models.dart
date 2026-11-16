@@ -70,6 +70,7 @@ class Settings {
   String model;
   String provider; // id from aiProviders
   String baseUrl; // empty = provider default
+  String themeMode; // system | light | dark
   Settings({
     DateTime? deadline,
     List<double>? hours,
@@ -82,6 +83,7 @@ class Settings {
     this.model = '',
     this.provider = 'gemini',
     this.baseUrl = '',
+    this.themeMode = 'system',
   })  : deadline = deadline ?? DateTime(2026, 12, 2),
         hours = hours ?? List<double>.filled(7, 4.0);
 
@@ -115,6 +117,7 @@ class Settings {
         'model': model,
         'provider': provider,
         'baseUrl': baseUrl,
+        'themeMode': themeMode,
       };
 
   factory Settings.fromJson(Map<String, dynamic> j) {
@@ -132,6 +135,7 @@ class Settings {
       model: (j['model'] as String?) ?? '',
       provider: (j['provider'] as String?) ?? 'anthropic',
       baseUrl: (j['baseUrl'] as String?) ?? '',
+      themeMode: (j['themeMode'] as String?) ?? 'system',
     );
     st.keyInFile = legacyKey.isNotEmpty;
     return st;

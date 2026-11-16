@@ -92,7 +92,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(widget.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16))),
+        appBar: AppBar(title: Text(widget.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16))),
         body: Column(children: [
           AspectRatio(
             aspectRatio: 16 / 9,
@@ -104,13 +104,13 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                     color: Colors.black,
                     alignment: Alignment.center,
                     child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      const Text('انتهى الفيديو', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 10),
+                      Text('انتهى الفيديو', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                      SizedBox(height: 10),
                       OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white54)),
+                        style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: BorderSide(color: Colors.white54)),
                         onPressed: _replay,
-                        icon: const Icon(Icons.replay),
-                        label: const Text('إعادة'),
+                        icon: Icon(Icons.replay),
+                        label: Text('إعادة'),
                       ),
                     ]),
                   ),
@@ -119,21 +119,21 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(18),
+              padding: EdgeInsets.all(18),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(widget.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, height: 1.5, color: kBrownDark)),
-                const SizedBox(height: 10),
-                const Text('يُشغَّل هنا داخل المرشد فقط، بدون تطبيق يوتيوب ولا صفحة التوصيات.', style: TextStyle(height: 1.6, fontSize: 13)),
+                Text(widget.title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, height: 1.5, color: kBrownDark)),
+                SizedBox(height: 10),
+                Text('يُشغَّل هنا داخل المرشد فقط، بدون تطبيق يوتيوب ولا صفحة التوصيات.', style: TextStyle(height: 1.6, fontSize: 13)),
                 if (error != null) ...[
-                  const SizedBox(height: 14),
-                  const Text('لم يسمح يوتيوب بتشغيل هذا الفيديو داخل المشغّل المضمَّن.', style: TextStyle(color: Color(0xFFB5602E), height: 1.5)),
-                  const SizedBox(height: 8),
-                  FilledButton.icon(onPressed: _openInBrowser, icon: const Icon(Icons.public), label: const Text('فتحه في المتصفح المقيّد')),
+                  SizedBox(height: 14),
+                  Text('لم يسمح يوتيوب بتشغيل هذا الفيديو داخل المشغّل المضمَّن.', style: TextStyle(color: kWarn, height: 1.5)),
+                  SizedBox(height: 8),
+                  FilledButton.icon(onPressed: _openInBrowser, icon: Icon(Icons.public), label: Text('فتحه في المتصفح المقيّد')),
                 ],
               ]),
             ),
           ),
         ]),
-        bottomNavigationBar: const AppNavBar(),
+        bottomNavigationBar: AppNavBar(),
       );
 }

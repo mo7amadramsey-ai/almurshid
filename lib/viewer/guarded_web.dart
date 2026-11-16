@@ -76,12 +76,12 @@ class _GuardedWebPageState extends State<GuardedWebPage> {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: Text(shownTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16)),
+            title: Text(shownTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16)),
             actions: [
-              IconButton(tooltip: 'تحديث', icon: const Icon(Icons.refresh), onPressed: () => c.reload()),
+              IconButton(tooltip: 'تحديث', icon: Icon(Icons.refresh), onPressed: () => c.reload()),
               IconButton(
                 tooltip: 'نسخ الرابط',
-                icon: const Icon(Icons.link),
+                icon: Icon(Icons.link),
                 onPressed: () async {
                   final u = await c.currentUrl();
                   await Clipboard.setData(ClipboardData(text: u ?? widget.url));

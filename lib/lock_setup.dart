@@ -11,16 +11,16 @@ Future<bool> ensureLockReady(BuildContext c) async {
   final go = await showDialog<bool>(
     context: c,
     builder: (_) => AlertDialog(
-      title: const Text('تفعيل القفل الصارم'),
-      content: const Text(
+      title: Text('تفعيل القفل الصارم'),
+      content: Text(
         'فعّل خدمة «المرشد الدراسي» من إعدادات إمكانية الوصول (مرة واحدة فقط). '
         'تستخدمها الخدمة فقط لمعرفة أي تطبيق مفتوح فتمنعه أثناء الجلسة، ولا ترسل أي شيء خارج هاتفك.\n\n'
         'إذا كانت الخيارات رمادية: اذهب إلى معلومات التطبيق ← ⋮ ← السماح بالإعدادات المقيدة، ثم ارجع وفعّلها.',
         style: TextStyle(height: 1.6),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('لاحقاً')),
-        FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('فتح الإعدادات')),
+        TextButton(onPressed: () => Navigator.pop(c, false), child: Text('لاحقاً')),
+        FilledButton(onPressed: () => Navigator.pop(c, true), child: Text('فتح الإعدادات')),
       ],
     ),
   );
