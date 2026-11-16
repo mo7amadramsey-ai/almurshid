@@ -213,7 +213,9 @@ Plan buildPlan({
   final days = <DayPlan>[];
   if (last != null) {
     for (var d = today; !d.isAfter(last); d = DateTime(d.year, d.month, d.day + 1)) {
-      var cap = ((s.hours[d.weekday - 1] * 60 * (s.tired ? 0.75 : 1.0)) / 5).floor() * 5;
+      final want = s.hours[d.weekday - 1] * 60;
+      final limit = s.windowMinutes > 0 && want > s.windowMinutes ? s.windowMinutes.toDouble() : want;
+      var cap = ((limit * (s.tired ? 0.75 : 1.0)) / 5).floor() * 5;
       if (days.isEmpty) cap = cap - doneToday < 0 ? 0 : cap - doneToday;
       days.add(DayPlan(d, cap));
     }

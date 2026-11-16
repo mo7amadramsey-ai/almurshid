@@ -63,6 +63,8 @@ class Settings {
   int bufferDays; // safety days kept free before each exam
   double videoFactor; // video minutes x factor (pauses, notes)
   bool tired; // "I'm tired": capacity x 0.75
+  int windowStart; // allowed study window: minutes from midnight (default 08:00)
+  int windowEnd; // minutes from midnight (default 22:00)
   String apiKey;
   String model;
   String provider; // id from aiProviders
@@ -73,6 +75,8 @@ class Settings {
     this.bufferDays = 2,
     this.videoFactor = 1.5,
     this.tired = false,
+    this.windowStart = 8 * 60,
+    this.windowEnd = 22 * 60,
     this.apiKey = '',
     this.model = '',
     this.provider = 'gemini',
@@ -80,12 +84,32 @@ class Settings {
   })  : deadline = deadline ?? DateTime(2026, 12, 2),
         hours = hours ?? List<double>.filled(7, 4.0);
 
+  /// Length of the allowed study window in minutes (0 when it is invalid)
+  int get windowMinutes => windowEnd > windowStart ? windowEnd - windowStart : 0;
+
+  /// Moves [t] into the allowed window of its day: a time before the window goes to its start, one
+  /// after it to its end. With [earlier], a time before the window goes to the END of the previous
+  /// day instead (a deadline reminder must never come later than planned).
+  DateTime clampToWindow(DateTime t, {bool earlier = false}) {
+    if (windowMinutes <= 0) return t;
+    final m = t.hour * 60 + t.minute;
+    if (m < windowStart) {
+      return earlier
+          ? DateTime(t.year, t.month, t.day - 1, windowEnd ~/ 60, windowEnd % 60)
+          : DateTime(t.year, t.month, t.day, windowStart ~/ 60, windowStart % 60);
+    }
+    if (m > windowEnd) return DateTime(t.year, t.month, t.day, windowEnd ~/ 60, windowEnd % 60);
+    return t;
+  }
+
   Map<String, dynamic> toJson() => {
         'deadline': deadline.toIso8601String(),
         'hours': hours,
         'bufferDays': bufferDays,
         'videoFactor': videoFactor,
         'tired': tired,
+        'windowStart': windowStart,
+        'windowEnd': windowEnd,
         'apiKey': apiKey,
         'model': model,
         'provider': provider,
@@ -100,6 +124,8 @@ class Settings {
       bufferDays: (j['bufferDays'] as num?)?.toInt() ?? 2,
       videoFactor: (j['videoFactor'] as num?)?.toDouble() ?? 1.5,
       tired: (j['tired'] as bool?) ?? false,
+      windowStart: (j['windowStart'] as num?)?.toInt() ?? 8 * 60,
+      windowEnd: (j['windowEnd'] as num?)?.toInt() ?? 22 * 60,
       apiKey: (j['apiKey'] as String?) ?? '',
       model: (j['model'] as String?) ?? '',
       provider: (j['provider'] as String?) ?? 'anthropic',

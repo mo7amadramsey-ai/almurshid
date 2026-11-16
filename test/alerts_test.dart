@@ -4,6 +4,19 @@ import 'package:almurshid/models.dart';
 import 'package:almurshid/study_models.dart';
 
 void main() {
+  test('reminders are moved into the allowed study window', () {
+    final s = Settings(windowStart: 9 * 60, windowEnd: 20 * 60);
+    expect(s.windowMinutes, 11 * 60);
+    expect(s.clampToWindow(DateTime(2026, 11, 17, 23, 59)), DateTime(2026, 11, 17, 20));
+    expect(s.clampToWindow(DateTime(2026, 11, 17, 6)), DateTime(2026, 11, 17, 9));
+    expect(s.clampToWindow(DateTime(2026, 11, 17, 6), earlier: true), DateTime(2026, 11, 16, 20));
+    expect(s.clampToWindow(DateTime(2026, 11, 17, 12)), DateTime(2026, 11, 17, 12));
+    final back = Settings.fromJson(s.toJson());
+    expect(back.windowStart, 9 * 60);
+    expect(back.windowEnd, 20 * 60);
+    expect(Settings.fromJson({}).windowStart, 8 * 60);
+  });
+
   test('news notification names the course and the kind', () {
     final n = SyncNews(at: DateTime(2026, 11, 15), first: false, added: [
       NewsEntry('Physics', 'Lecture 4', 'video', 'u1'),

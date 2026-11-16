@@ -22,6 +22,15 @@ StudyData dataWith({double hours = 4, DateTime? deadline}) {
 }
 
 void main() {
+  test('a day never holds more study than the allowed window', () {
+    final t = tree([course('1', [item('A', 'https://x/a', ItemKind.pdf)])]);
+    final data = dataWith(hours: 8);
+    data.settings.windowStart = 9 * 60;
+    data.settings.windowEnd = 11 * 60; // 2 hours only
+    final plan = buildPlan(tasks: buildTasks(t, data), cfg: data.courses, settings: data.settings, now: now);
+    expect(plan.days.every((d) => d.capacity <= 120), isTrue);
+  });
+
   test('only study items become tasks, durations come from the title or defaults', () {
     final t = tree([
       course('1', [

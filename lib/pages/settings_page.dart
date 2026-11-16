@@ -33,6 +33,28 @@ class _SettingsPageState extends State<SettingsPage> {
     super.dispose();
   }
 
+  String _fmtMin(int m) => '${(m ~/ 60).toString().padLeft(2, '0')}:${(m % 60).toString().padLeft(2, '0')}';
+
+  Future<void> _pickWindow({required bool start}) async {
+    final s = app.settings;
+    final cur = start ? s.windowStart : s.windowEnd;
+    final t = await showTimePicker(context: context, initialTime: TimeOfDay(hour: cur ~/ 60, minute: cur % 60));
+    if (t == null || !mounted) return;
+    final m = t.hour * 60 + t.minute;
+    final ok = start ? s.windowEnd - m >= 60 : m - s.windowStart >= 60;
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يجب أن تكون النافذة ساعة على الأقل')));
+      return;
+    }
+    if (start) {
+      s.windowStart = m;
+    } else {
+      s.windowEnd = m;
+    }
+    app.commit();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = app.settings;
@@ -74,6 +96,20 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 SizedBox(width: 44, child: Text('${s.hours[i].toStringAsFixed(1)} س', textAlign: TextAlign.end)),
               ]),
+            const Divider(),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('بداية وقت الدراسة المسموح'),
+              subtitle: const Text('لا تُرسَل تذكيرات قبلها، ولا تتجاوز الخطة طول النافذة'),
+              trailing: Text(_fmtMin(s.windowStart), style: const TextStyle(fontWeight: FontWeight.w800)),
+              onTap: () => _pickWindow(start: true),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('نهاية وقت الدراسة المسموح'),
+              trailing: Text(_fmtMin(s.windowEnd), style: const TextStyle(fontWeight: FontWeight.w800)),
+              onTap: () => _pickWindow(start: false),
+            ),
             const Divider(),
             ListTile(
               contentPadding: EdgeInsets.zero,

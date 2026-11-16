@@ -49,7 +49,7 @@ List<Reminder> buildReminders({required Tree tree, required StudyData data, requ
       if (due == null || i.submitted == true) continue;
       if (data.items['${c.id}|${i.url}']?.done ?? false) continue;
       for (final h in [24, 3]) {
-        final at = due.subtract(Duration(hours: h));
+        final at = data.settings.clampToWindow(due.subtract(Duration(hours: h)), earlier: true);
         if (at.isAfter(now)) {
           out.add(Reminder(at, 'تذكير: ${kindLabels[i.kind]} خلال ${h == 24 ? 'يوم' : '3 ساعات'}',
               '${i.title}\n${c.title}\nالموعد: ${_hm(due)}'));
@@ -59,7 +59,7 @@ List<Reminder> buildReminders({required Tree tree, required StudyData data, requ
     final ex = data.courses[c.id]?.exam;
     if (ex != null) {
       for (final d in [3, 1]) {
-        final at = DateTime(ex.year, ex.month, ex.day - d, 18);
+        final at = data.settings.clampToWindow(DateTime(ex.year, ex.month, ex.day - d, 18));
         if (at.isAfter(now)) {
           out.add(Reminder(at, d == 1 ? 'امتحان ${c.title} غداً' : 'امتحان ${c.title} بعد $d أيام',
               'راجع خطتك في «اليوم» وأنهِ ما تبقى من المادة.'));
@@ -69,7 +69,7 @@ List<Reminder> buildReminders({required Tree tree, required StudyData data, requ
   }
   for (var k = 0; k < 7; k++) {
     final day = DateTime(now.year, now.month, now.day + k);
-    final at = DateTime(day.year, day.month, day.day, 17);
+    final at = data.settings.clampToWindow(DateTime(day.year, day.month, day.day, 17));
     final h = data.settings.hours[day.weekday - 1];
     if (at.isAfter(now) && h > 0) {
       out.add(Reminder(at, 'وقت المذاكرة', 'خصّصت ${h.toStringAsFixed(h == h.roundToDouble() ? 0 : 1)} ساعات اليوم. افتح «اليوم» لترى خطتك.'));
