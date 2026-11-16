@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../sync_page.dart';
 import '../notifier.dart';
-import '../theme.dart';
 import 'follow_page.dart';
 import 'calendar_page.dart';
 import 'courses_page.dart';
