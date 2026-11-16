@@ -34,7 +34,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun startSession(ms: Long, type: String?, target: String?) {
-        val left = ms.coerceIn(1L, 3600000L)
+        val left = ms.coerceIn(1L, 21600000L)
         prefs.edit()
             .putLong("left", left)
             .putLong("endAt", System.currentTimeMillis() + left)
@@ -60,7 +60,7 @@ class MainActivity : FlutterActivity() {
                 // Dart reports the remaining time every few seconds
                 "setLeft" -> {
                     if (prefs.contains("type")) {
-                        prefs.edit().putLong("left", (call.argument<Number>("left"))!!.toLong().coerceIn(0L, 3600000L)).apply()
+                        prefs.edit().putLong("left", (call.argument<Number>("left"))!!.toLong().coerceIn(0L, 21600000L)).apply()
                     }
                     result.success(true)
                 }

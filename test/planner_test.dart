@@ -17,7 +17,7 @@ final now = DateTime(2026, 11, 15, 9);
 StudyData dataWith({double hours = 4, DateTime? deadline}) {
   final d = StudyData();
   d.settings.hours = List<double>.filled(7, hours);
-  d.settings.deadline = deadline ?? DateTime(2026, 12, 2);
+  d.settings.deadline = deadline ?? DateTime(2026, 12, 1);
   return d;
 }
 
@@ -126,5 +126,12 @@ void main() {
     expect(back.settings.hours.first, 3);
     expect(back.courses['7']!.exam, DateTime(2026, 12, 2));
     expect(back.items['7|u']!.minutes, 45);
+  });
+
+  test('last study day is chosen by the user; a course with an exam stops the day before it', () {
+    final data = dataWith(deadline: DateTime(2026, 12, 2));
+    expect(studyUntil('X', data.courses, data.settings), DateTime(2026, 12, 2));
+    data.cfg('B').exam = DateTime(2026, 12, 5);
+    expect(studyUntil('B', data.courses, data.settings), DateTime(2026, 12, 4));
   });
 }

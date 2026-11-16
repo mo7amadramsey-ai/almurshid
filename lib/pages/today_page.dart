@@ -37,6 +37,26 @@ class TodayPage extends StatelessWidget {
     final now = dOnly(DateTime.now());
 
     return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 28), children: [
+      // ---- Study Seal: lock the phone for a time you choose (calls only)
+      Panel(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StrictPage())),
+          child: Row(children: const [
+            Icon(Icons.lock_clock, color: kBrown, size: 30),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('الختم الدراسي', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                SizedBox(height: 2),
+                Text('اقفل هاتفك على الدراسة مدة تحددها، ولا يعمل إلا الاتصال', style: TextStyle(fontSize: 12.5, height: 1.4)),
+              ]),
+            ),
+            Icon(Icons.chevron_left),
+          ]),
+        ),
+      ),
+      const SizedBox(height: 12),
       // ---- overall status
       Panel(
         color: r.feasible ? null : const Color(0xFFF3E1D3),

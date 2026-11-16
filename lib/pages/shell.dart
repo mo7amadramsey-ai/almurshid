@@ -57,7 +57,7 @@ class _ShellState extends State<Shell> {
       ]),
       bottomNavigationBar: NavigationBar(
         backgroundColor: kSurface,
-        indicatorColor: kSurface2,
+        indicatorColor: kBrownLight,
         selectedIndex: tab,
         onDestinationSelected: (i) => setState(() => tab = i),
         destinations: const [

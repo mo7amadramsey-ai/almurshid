@@ -9,12 +9,16 @@ const kInk = Color(0xFF283420);     // deep green-black text
 const kForest = Color(0xFF4F6B2E);  // forest green accent
 const kOutline = Color(0xFFD8CCA8);
 const kGold = Color(0xFFD4B25E);
+const kBrown = Color(0xFFA67B5B);      // light brown (warm accent)
+const kBrownLight = Color(0xFFE3CDB1); // soft brown tint for selections / chips
+const kBrownDark = Color(0xFF6F4E33);  // deep brown for titles
 
 ThemeData buildTheme() {
   final scheme = ColorScheme.fromSeed(seedColor: kMoss, brightness: Brightness.light).copyWith(
     primary: kMoss,
     onPrimary: Colors.white,
     secondary: kForest,
+    tertiary: kBrown,
     onSecondary: Colors.white,
     surface: kSurface,
     onSurface: kInk,
@@ -25,14 +29,20 @@ ThemeData buildTheme() {
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: Colors.transparent, // AppBackdrop paints the page
-    navigationBarTheme: const NavigationBarThemeData(indicatorColor: kSurface2),
+    navigationBarTheme: const NavigationBarThemeData(indicatorColor: kBrownLight),
+    chipTheme: ChipThemeData(
+      selectedColor: kBrownLight,
+      backgroundColor: kSurface,
+      side: const BorderSide(color: kOutline),
+      labelStyle: const TextStyle(color: kInk),
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.transparent,
       foregroundColor: kInk,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
-      titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: kInk),
+      titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: kBrownDark),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(

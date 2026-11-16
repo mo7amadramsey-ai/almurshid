@@ -103,8 +103,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('موعد افتراضي للمواد التي بلا امتحان محدد'),
-              subtitle: Text('${fmtDm(s.deadline)}/${s.deadline.year}'),
+              title: const Text('آخر يوم دراسة (تحدده أنت)'),
+              subtitle: Text('${fmtDm(s.deadline)}/${s.deadline.year}  •  المواد التي لها موعد امتحان تتوقف قبله بيوم'),
               trailing: const Icon(Icons.event_outlined),
               onTap: () async {
                 final d = await pickDate(context, s.deadline);

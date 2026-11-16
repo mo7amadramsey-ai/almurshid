@@ -176,8 +176,14 @@ class Plan {
 }
 
 DateTime studyUntil(String courseId, Map<String, CourseCfg> cfg, Settings s) {
-  final d = dOnly(cfg[courseId]?.exam ?? s.deadline);
-  return DateTime(d.year, d.month, d.day - 1);
+  // A course with its own exam date: study until the day before the exam.
+  final exam = cfg[courseId]?.exam;
+  if (exam != null) {
+    final d = dOnly(exam);
+    return DateTime(d.year, d.month, d.day - 1);
+  }
+  // Otherwise: the last study day is exactly the day the user chose in settings.
+  return dOnly(s.deadline);
 }
 
 Plan buildPlan({

@@ -58,7 +58,7 @@ class ItemState {
 }
 
 class Settings {
-  DateTime deadline; // fallback exam date for courses without their own
+  DateTime deadline; // LAST STUDY DAY chosen by the user (for courses without an exam date)
   List<double> hours; // study hours per weekday, index = DateTime.weekday - 1 (Mon..Sun)
   int bufferDays; // safety days kept free before each exam
   double videoFactor; // video minutes x factor (pauses, notes)
