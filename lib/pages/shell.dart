@@ -4,6 +4,7 @@ import '../sync_page.dart';
 import '../notifier.dart';
 import '../theme.dart';
 import 'follow_page.dart';
+import 'calendar_page.dart';
 import 'courses_page.dart';
 import 'mentor_page.dart';
 import 'plan_page.dart';
@@ -40,6 +41,11 @@ class _ShellState extends State<Shell> {
       appBar: AppBar(
         title: Text(titles[tab]),
         actions: [
+          IconButton(
+            tooltip: 'التقويم',
+            icon: const Icon(Icons.calendar_month),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarPage())),
+          ),
           IconButton(tooltip: 'استيراد من مودل', icon: const Icon(Icons.sync), onPressed: _sync),
           IconButton(
             tooltip: 'الإعدادات',

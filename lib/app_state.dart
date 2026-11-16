@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'models.dart';
 import 'notifier.dart';
@@ -13,6 +14,7 @@ class AppState extends ChangeNotifier {
   List<Task> tasks = [];
   Plan? plan;
   bool loaded = false;
+  Timer? _remTimer;
 
   Settings get settings => data.settings;
 
@@ -45,6 +47,9 @@ class AppState extends ChangeNotifier {
     rebuild();
     notifyListeners();
     await saveStudy(data);
+    // keep reminders in step with exam dates / settings / finished tasks (debounced)
+    _remTimer?.cancel();
+    _remTimer = Timer(const Duration(seconds: 2), () => rescheduleReminders(tree, data));
   }
 
   Future<void> toggle(Task t) async {
