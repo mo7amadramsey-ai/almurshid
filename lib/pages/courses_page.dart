@@ -19,39 +19,62 @@ class CoursesPage extends StatelessWidget {
           return EmptyNote(icon: Icons.menu_book_outlined, title: 'لا مواد بعد', body: 'استورد موادك من مودل أولاً.');
         }
         final now = dOnly(DateTime.now());
-        return ListView(padding: EdgeInsets.fromLTRB(16, 4, 16, 28), children: [
-          for (final course in t.courses)
-            Padding(
-              padding: EdgeInsets.only(bottom: 10),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CoursePage(course: course))),
-                child: Panel(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(course.title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, height: 1.3)),
-                    SizedBox(height: 10),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                          value: app.courseProgress(course.id), minHeight: 7, color: kForest, backgroundColor: kSurface2),
-                    ),
-                    SizedBox(height: 8),
-                    Wrap(spacing: 14, runSpacing: 4, children: [
-                      Text('متبقٍ ${fmtMin(app.remainingMin(course.id))}', style: TextStyle(color: kMoss)),
-                      Text('صعوبة ${app.data.cfg(course.id).difficulty}/5', style: TextStyle(color: kMoss)),
-                      Text(
-                        app.data.cfg(course.id).exam == null
-                            ? 'بلا موعد امتحان'
-                            : 'امتحان ${fmtDm(app.data.cfg(course.id).exam!)} (بعد ${dayDiff(now, app.data.cfg(course.id).exam!)} يوم)',
-                        style: TextStyle(color: app.data.cfg(course.id).exam == null ? kWarnText : kMoss),
-                      ),
-                    ]),
-                  ]),
-                ),
-              ),
-            ),
+        return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 28), children: [
+          for (final course in t.courses) _CourseCard(course: course, now: now),
         ]);
       });
+}
+
+class _CourseCard extends StatelessWidget {
+  final Course course;
+  final DateTime now;
+  const _CourseCard({required this.course, required this.now});
+
+  @override
+  Widget build(BuildContext context) {
+    final cfg = app.data.cfg(course.id);
+    final p = app.courseProgress(course.id);
+    final exam = cfg.exam;
+    final left = exam == null ? null : dayDiff(now, dOnly(exam));
+    final hot = left != null && left <= 3;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: kSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22), side: BorderSide(color: kOutline)),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CoursePage(course: course))),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(children: [
+              ProgressRing(
+                value: p,
+                size: 66,
+                child: Text('${(p * 100).round()}%', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(course.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, height: 1.35)),
+                  const SizedBox(height: 8),
+                  Wrap(spacing: 8, runSpacing: 6, children: [
+                    Pill('متبقٍ ${fmtMin(app.remainingMin(course.id))}', icon: Icons.timelapse),
+                    Pill('صعوبة ${cfg.difficulty}/5', icon: Icons.speed),
+                    exam == null
+                        ? Pill('بلا موعد امتحان', icon: Icons.event_busy, bg: kWarnBg, fg: kWarnText)
+                        : Pill('امتحان ${fmtDm(exam)}  ·  ${left! < 0 ? 'فات' : 'بعد $left يوم'}',
+                            icon: Icons.quiz_outlined, bg: hot ? kWarnBg : kBrownLight, fg: hot ? kWarnText : kBrownDark),
+                  ]),
+                ]),
+              ),
+              Icon(Icons.chevron_left, color: kInk.withValues(alpha: 0.4)),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class CoursePage extends StatefulWidget {
@@ -121,41 +144,60 @@ class _CoursePageState extends State<CoursePage> {
         for (final g in groupChapters(tasks, app.data.items)) {
           final doneN = g.tasks.where((t) => t.done).length;
           rows.add(Padding(
-            padding: EdgeInsets.fromLTRB(4, 18, 4, 4),
+            padding: const EdgeInsets.fromLTRB(4, 24, 4, 8),
             child: Row(children: [
-              Expanded(child: Text(g.label, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kForest))),
-              Text('$doneN/${g.tasks.length}', style: TextStyle(color: kMoss)),
+              Expanded(child: Text(g.label, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: kInk))),
+              Pill('$doneN/${g.tasks.length}', icon: doneN == g.tasks.length ? Icons.check_circle_outline : null),
             ]),
           ));
           String? bucket;
           for (final t in g.tasks) {
-          final b = bucketOf(t.kind);
-          if (b != bucket) {
-            bucket = b;
+            final b = bucketOf(t.kind);
+            if (b != bucket) {
+              bucket = b;
+              rows.add(Padding(
+                padding: const EdgeInsets.fromLTRB(8, 6, 4, 6),
+                child: Text(b, style: TextStyle(fontWeight: FontWeight.w600, color: kMoss, fontSize: 12.5)),
+              ));
+            }
             rows.add(Padding(
-              padding: EdgeInsets.fromLTRB(8, 8, 4, 4),
-              child: Text(b, style: TextStyle(fontWeight: FontWeight.w700, color: kMoss, fontSize: 12.5)),
-            ));
-          }
-          rows.add(Container(
-            margin: EdgeInsets.only(bottom: 6),
-            decoration: cardBox(14),
-            child: ListTile(
-              dense: true,
-              onTap: () => openItem(context, url: t.item.url, title: t.title, kind: t.kind),
-              leading: Checkbox(value: t.done, activeColor: kForest, onChanged: (_) => app.toggle(t)),
-              title: Text(t.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(decoration: t.done ? TextDecoration.lineThrough : null)),
-              subtitle: Text(kindLabels[t.kind] ?? ''),
-              trailing: TextButton.icon(
-                onPressed: () => _editMinutes(t),
-                icon: Icon(kindIcon(t.kind), size: 16),
-                label: Text(fmtMin(t.minutes)),
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Material(
+                color: kSurface,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: kOutline)),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => openItem(context, url: t.item.url, title: t.title, kind: t.kind),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 4, 10, 4),
+                    child: Row(children: [
+                      Checkbox(
+                        value: t.done,
+                        shape: const CircleBorder(),
+                        activeColor: kForest,
+                        side: BorderSide(color: kMoss, width: 1.6),
+                        onChanged: (_) => app.toggle(t),
+                      ),
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(t.title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontWeight: FontWeight.w600, decoration: t.done ? TextDecoration.lineThrough : null, color: t.done ? kInk.withValues(alpha: 0.5) : kInk)),
+                          Text(kindLabels[t.kind] ?? '', style: TextStyle(fontSize: 12.5, color: kInk.withValues(alpha: 0.6))),
+                        ]),
+                      ),
+                      const SizedBox(width: 8),
+                      InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () => _editMinutes(t),
+                        child: Pill(fmtMin(t.minutes), icon: kindIcon(t.kind)),
+                      ),
+                    ]),
+                  ),
+                ),
               ),
-            ),
-          ));
+            ));
           }
         }
         return Scaffold(

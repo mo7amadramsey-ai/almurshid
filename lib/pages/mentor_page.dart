@@ -4,6 +4,7 @@ import '../app_state.dart';
 import '../study_models.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import '../widgets.dart';
 
 class _Msg {
   final bool user;
@@ -118,21 +119,56 @@ class _MentorPageState extends State<MentorPage> {
             body: 'اختر خدمة ذكاء اصطناعي وأضف مفتاحها من الإعدادات (أيقونة الترس). فيه خيارات مجانية مثل Gemini وGroq. يبقى المفتاح على هاتفك فقط.',
           );
         }
+        final prov = providerById(app.settings.provider);
+        final model = app.settings.model.trim().isEmpty ? prov.model : app.settings.model.trim();
         return Column(children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+            child: Row(children: [
+              Pill('${prov.name.split(' ').first}  ·  $model', icon: Icons.bolt),
+              const Spacer(),
+              if (msgs.isNotEmpty)
+                TextButton.icon(
+                  onPressed: busy ? null : () => setState(msgs.clear),
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('محادثة جديدة'),
+                ),
+            ]),
+          ),
           Expanded(
             child: msgs.isEmpty
-                ? ListView(controller: scroll, padding: EdgeInsets.all(16), children: [
-                    Text('اسألني أي شيء عن دراستك، أعرف خطتك ومواعيدك:', style: TextStyle(height: 1.6)),
-                    SizedBox(height: 10),
-                    Wrap(spacing: 8, runSpacing: 8, children: [
-                      for (final q in [
-                        'ماذا أدرس اليوم؟',
-                        'أنا متعب اليوم، ماذا أفعل؟',
-                        'هل أستطيع إنهاء كل شيء قبل الامتحانات؟',
-                        'ما أخطر مادة عندي الآن؟',
-                      ])
-                        ActionChip(label: Text(q), onPressed: () => _send(q)),
-                    ]),
+                ? ListView(controller: scroll, padding: const EdgeInsets.all(16), children: [
+                    const SizedBox(height: 8),
+                    Center(child: Container(width: 64, height: 64, decoration: BoxDecoration(color: kTint, shape: BoxShape.circle), child: Icon(Icons.auto_awesome, color: kForest, size: 30))),
+                    const SizedBox(height: 12),
+                    const Text('مرشدك الدراسي', textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 6),
+                    Text('أعرف خطتك ومواعيدك. اسألني أو اختر سؤالاً:', textAlign: TextAlign.center, style: TextStyle(height: 1.6, color: kInk.withValues(alpha: 0.7))),
+                    const SizedBox(height: 14),
+                    for (final q in [
+                      'ماذا أدرس اليوم؟',
+                      'أنا متعب اليوم، ماذا أفعل؟',
+                      'هل أستطيع إنهاء كل شيء قبل الامتحانات؟',
+                      'ما أخطر مادة عندي الآن؟',
+                    ])
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Material(
+                          color: kSurface,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: kOutline)),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () => _send(q),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              child: Row(children: [
+                                Expanded(child: Text(q, style: const TextStyle(fontWeight: FontWeight.w600))),
+                                Icon(Icons.north_west, size: 18, color: kMoss),
+                              ]),
+                            ),
+                          ),
+                        ),
+                      ),
                   ])
                 : ListView.builder(
                     controller: scroll,
@@ -149,7 +185,12 @@ class _MentorPageState extends State<MentorPage> {
                           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.82),
                           decoration: BoxDecoration(
                             color: m.user ? kForest : kSurface,
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadiusDirectional.only(
+                              topStart: const Radius.circular(18),
+                              topEnd: const Radius.circular(18),
+                              bottomStart: Radius.circular(m.user ? 18 : 4),
+                              bottomEnd: Radius.circular(m.user ? 4 : 18),
+                            ),
                             border: m.user ? null : Border.all(color: kOutline),
                           ),
                           child: SelectableText(m.text, style: TextStyle(height: 1.55, color: m.user ? Colors.white : kInk)),
