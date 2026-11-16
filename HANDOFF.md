@@ -10,3 +10,7 @@
 4. لا تكتب أي توكن في المستودع.
 5. معرّف التطبيق `com.mohammed.almurshid`، ومفتاح توقيع جديد في أسرار المستودع (`FL_KEYSTORE_B64`, `FL_KEYSTORE_PASS`, alias `almurshid`). لا يُحدَّث فوق تطبيقات `focus_mentor` القديمة.
 6. كود القفل والجدول القديم: في مستودع `mo7amadramsey-ai/focus-mentor`، فرع `focus-lock-legacy`.
+
+
+## حجز عمل (جلسة التصميم، 2026-11-16)
+جلسة «إعادة التصميم والوضع الداكن» تعمل الآن على: `lib/theme.dart`, `lib/widgets.dart`, `lib/pages/*` (واجهات فقط). **لا تعدّل هذه الملفات من جلسة أخرى**؛ المنطق (`planner`, `crawler`, `ai`, Kotlin) متاح للجلسات الأخرى. كل دفعة تُرفع على الفرع `feature/modern-redesign-hardening`.
