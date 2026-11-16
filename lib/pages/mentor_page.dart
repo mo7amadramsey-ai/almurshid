@@ -4,7 +4,6 @@ import '../app_state.dart';
 import '../study_models.dart';
 import '../theme.dart';
 import '../widgets.dart';
-import '../widgets.dart';
 
 class _Msg {
   final bool user;
