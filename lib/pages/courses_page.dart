@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../viewer/open_item.dart';
 import '../ai.dart';
 import '../app_state.dart';
 import '../chapters.dart';
@@ -141,6 +142,7 @@ class _CoursePageState extends State<CoursePage> {
             decoration: cardBox(14),
             child: ListTile(
               dense: true,
+              onTap: () => openItem(context, url: t.item.url, title: t.title, kind: t.kind),
               leading: Checkbox(value: t.done, activeColor: kForest, onChanged: (_) => app.toggle(t)),
               title: Text(t.title,
                   maxLines: 2,

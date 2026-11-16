@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'viewer/open_item.dart';
 import 'package:flutter/services.dart';
 import 'models.dart';
 import 'theme.dart';
@@ -108,7 +109,8 @@ class TreePage extends StatelessWidget {
         leading: leading,
         title: Text(i.title, style: const TextStyle(fontSize: 14)),
         subtitle: Text(kindLabels[i.kind]!, style: const TextStyle(fontSize: 11.5)),
-        onTap: () => _copy(context, i.url, 'تم نسخ الرابط'),
+        onTap: () => openItem(context, url: i.url, title: i.title, kind: i.kind),
+        onLongPress: () => _copy(context, i.url, 'تم نسخ الرابط'),
       );
     }
     return Theme(

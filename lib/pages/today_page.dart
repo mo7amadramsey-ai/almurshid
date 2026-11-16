@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../viewer/open_item.dart';
 import '../app_state.dart';
 import '../models.dart';
 import '../planner.dart';
@@ -188,7 +189,13 @@ class _SlotTile extends StatelessWidget {
           ),
           if (!t.done)
             IconButton(
-              tooltip: 'جلسة صارمة',
+              tooltip: 'فتح داخل المرشد',
+              icon: const Icon(Icons.open_in_new, color: kBrown),
+              onPressed: () => openItem(context, url: t.item.url, title: t.title, kind: t.kind),
+            ),
+          if (!t.done)
+            IconButton(
+              tooltip: 'الختم الدراسي',
               icon: const Icon(Icons.lock_clock, color: kForest),
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => StrictPage(task: t))),
             ),
