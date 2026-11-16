@@ -72,7 +72,7 @@ jobs:
           mkdir /tmp/bl
           touch test.log build.log analyze.log
           cat analyze.log test.log build.log | grep -v "info •" | grep -nE "Error|error:|FAILURE|What went wrong|lib/|test/|Expected|Actual|EXCEPTION|Some tests failed" | head -120 > /tmp/bl/errors.txt || true
-          { tail -n 80 test.log; echo ======; tail -n 80 build.log; } > /tmp/bl/tail.txt || true
+          { tail -n 40 analyze.log | cut -c1-300; echo ======; tail -n 80 test.log; echo ======; tail -n 80 build.log; } > /tmp/bl/tail.txt || true
           git config user.name github-actions
           git config user.email actions@github.com
           git checkout --orphan buildlog
