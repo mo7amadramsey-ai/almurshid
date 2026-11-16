@@ -10,6 +10,7 @@ dependencies:
   webview_flutter: ^4.9.0
   webview_flutter_android: any
   html: ^0.15.4
+  flutter_secure_storage: ^9.2.2   # AI key in Android Keystore
   path_provider: ^2.1.0
   wakelock_plus: ^1.2.0
 dev_dependencies:

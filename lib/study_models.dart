@@ -66,6 +66,7 @@ class Settings {
   int windowStart; // allowed study window: minutes from midnight (default 08:00)
   int windowEnd; // minutes from midnight (default 22:00)
   String apiKey;
+  bool keyInFile = false; // true only for a legacy plain-text key read from study.json (until migrated)
   String model;
   String provider; // id from aiProviders
   String baseUrl; // empty = provider default
@@ -110,7 +111,7 @@ class Settings {
         'tired': tired,
         'windowStart': windowStart,
         'windowEnd': windowEnd,
-        'apiKey': apiKey,
+        if (keyInFile) 'apiKey': apiKey, // legacy only; the key normally lives in Keystore (secrets.dart)
         'model': model,
         'provider': provider,
         'baseUrl': baseUrl,
@@ -118,7 +119,8 @@ class Settings {
 
   factory Settings.fromJson(Map<String, dynamic> j) {
     final h = ((j['hours'] as List?) ?? []).map((e) => (e as num).toDouble()).toList();
-    return Settings(
+    final legacyKey = (j['apiKey'] as String?) ?? '';
+    final st = Settings(
       deadline: j['deadline'] == null ? null : DateTime.parse(j['deadline'] as String),
       hours: h.length == 7 ? h : null,
       bufferDays: (j['bufferDays'] as num?)?.toInt() ?? 2,
@@ -126,11 +128,13 @@ class Settings {
       tired: (j['tired'] as bool?) ?? false,
       windowStart: (j['windowStart'] as num?)?.toInt() ?? 8 * 60,
       windowEnd: (j['windowEnd'] as num?)?.toInt() ?? 22 * 60,
-      apiKey: (j['apiKey'] as String?) ?? '',
+      apiKey: legacyKey,
       model: (j['model'] as String?) ?? '',
       provider: (j['provider'] as String?) ?? 'anthropic',
       baseUrl: (j['baseUrl'] as String?) ?? '',
     );
+    st.keyInFile = legacyKey.isNotEmpty;
+    return st;
   }
 }
 

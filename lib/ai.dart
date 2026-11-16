@@ -36,6 +36,26 @@ bool aiReady(Settings s) {
   return s.apiKey.trim().isNotEmpty || !p.needsKey;
 }
 
+bool _isLocalHost(String h) {
+  final x = h.toLowerCase();
+  if (x == 'localhost' || x.endsWith('.local')) return true;
+  final p = x.split('.').map(int.tryParse).toList();
+  if (p.length != 4 || p.any((e) => e == null)) return false;
+  final a = p[0]!, b = p[1]!;
+  return a == 127 || a == 10 || (a == 192 && b == 168) || (a == 172 && b >= 16 && b <= 31);
+}
+
+/// Throws a clear message when the address is unsafe: HTTPS is required whenever a key is sent;
+/// plain HTTP is only accepted for a keyless server on the local network (e.g. Ollama).
+void checkEndpoint(String url, {required bool hasKey}) {
+  final u = Uri.tryParse(url);
+  if (u == null || u.host.isEmpty || !(u.scheme == 'https' || u.scheme == 'http')) throw 'عنوان الخدمة غير صالح';
+  if (u.scheme == 'http') {
+    if (hasKey) throw 'لا يُسمح بإرسال المفتاح عبر اتصال غير مشفّر (http). استخدم عنواناً يبدأ بـ https.';
+    if (!_isLocalHost(u.host)) throw 'اتصال http مسموح فقط لخادم على شبكتك المحلية بدون مفتاح.';
+  }
+}
+
 Future<String> aiAsk({
   required Settings settings,
   required String system,
@@ -48,6 +68,7 @@ Future<String> aiAsk({
   final model = settings.model.trim().isEmpty ? p.model : settings.model.trim();
   // Pasted keys often carry spaces/line breaks/invisible chars; strip them.
   final key = settings.apiKey.replaceAll(RegExp(r'[\s\u200B-\u200F\u202A-\u202E\uFEFF]'), '');
+  checkEndpoint(base, hasKey: key.isNotEmpty);
   final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
   try {
     late final HttpClientRequest req;

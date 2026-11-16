@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../secrets.dart';
 import '../ai.dart';
 import '../app_state.dart';
 import '../theme.dart';
@@ -205,6 +206,31 @@ class _SettingsPageState extends State<SettingsPage> {
                     suffixIcon: IconButton(icon: Icon(hide ? Icons.visibility_off : Icons.visibility), onPressed: () => setState(() => hide = !hide)),
                   ),
                   onChanged: (v) => s.apiKey = v.trim(),
+                ),
+                ValueListenableBuilder<bool>(
+                  valueListenable: keystoreFailed,
+                  builder: (_, failed, __) => Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Row(children: [
+                      Expanded(
+                        child: Text(
+                          failed
+                              ? 'تعذّر الحفظ الآمن للمفتاح على هذا الجهاز؛ لن يُحفظ بنص عادي. أعد إدخاله عند الحاجة.'
+                              : 'يُحفظ المفتاح مشفّراً داخل مخزن الأمان في الهاتف، ولا يدخل في ملفات الدراسة.',
+                          style: TextStyle(fontSize: 12, height: 1.5, color: failed ? const Color(0xFFB5602E) : null),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          key.clear();
+                          s.apiKey = '';
+                          app.commit();
+                          setState(() {});
+                        },
+                        child: const Text('حذف المفتاح'),
+                      ),
+                    ]),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 TextField(
