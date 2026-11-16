@@ -15,6 +15,8 @@ jobs:
         with: { channel: stable }
       # Generate the Android scaffolding (existing files are kept)
       - run: flutter create --platforms=android --org com.mohammed --project-name almurshid .
+      # `flutter create` adds a sample test that does not belong to this project (and breaks analysis)
+      - run: rm -f test/widget_test.dart
       # Overlay our native code, manifest and resources
       - run: cp -r android_overlay/* android/
       # flutter_secure_storage needs minSdk 23+: make sure the generated project is not lower

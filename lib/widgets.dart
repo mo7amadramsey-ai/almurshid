@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 export 'tree_page.dart' show kindIcon;
-import 'models.dart';
 import 'theme.dart';
 
 const weekdayNames = ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
