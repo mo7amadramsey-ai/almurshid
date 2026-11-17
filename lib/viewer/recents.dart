@@ -46,6 +46,16 @@ class RecentsStore extends ChangeNotifier {
       await (await _file()).writeAsString(jsonEncode(items.map((e) => e.toJson()).toList()));
     } catch (_) {}
   }
+
+  // Forget everything (used by "delete all my data")
+  Future<void> clear() async {
+    items.clear();
+    notifyListeners();
+    try {
+      final f = await _file();
+      if (await f.exists()) await f.delete();
+    } catch (_) {}
+  }
 }
 
 final recents = RecentsStore();

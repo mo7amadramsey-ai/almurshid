@@ -142,6 +142,9 @@ class Settings {
   }
 }
 
+/// Version of the study.json format. Bump it when a field changes meaning and add a step to migrateStudyJson.
+const kSchema = 2;
+
 class StudyData {
   Settings settings;
   final Map<String, CourseCfg> courses; // by course id
@@ -155,6 +158,7 @@ class StudyData {
   ItemState state(String id) => items.putIfAbsent(id, () => ItemState());
 
   Map<String, dynamic> toJson() => {
+        'v': kSchema, // data format version (see migrateStudyJson)
         'settings': settings.toJson(),
         'courses': courses.map((k, v) => MapEntry(k, v.toJson())),
         'items': items.map((k, v) => MapEntry(k, v.toJson())),
