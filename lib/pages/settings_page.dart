@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../secrets.dart';
 import '../ai.dart';
+import '../data_panel.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import '../tree_page.dart';
@@ -275,6 +276,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ]),
         ),
+        const Heading('الأمان والخصوصية'),
+        const DataPrivacyPanel(),
         Heading('أدوات'),
         Panel(
           child: ListTile(

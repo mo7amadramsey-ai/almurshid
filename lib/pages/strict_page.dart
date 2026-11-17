@@ -6,6 +6,7 @@ import '../app_state.dart';
 import '../channel.dart';
 import '../lock_setup.dart';
 import '../planner.dart';
+import '../strict_info.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -198,7 +199,11 @@ class _StrictPageState extends State<StrictPage> {
             ),
         ]),
       ),
-      SizedBox(height: 18),
+      TextButton(
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StrictInfoPage())),
+        child: const Text('تفاصيل أكثر عن الصلاحيات والحدود'),
+      ),
+      SizedBox(height: 10),
       FilledButton.icon(onPressed: _start, icon: Icon(Icons.lock_clock), label: Text('ابدأ الختم الدراسي')),
     ]);
   }
