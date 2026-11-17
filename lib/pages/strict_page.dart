@@ -7,6 +7,7 @@ import '../channel.dart';
 import '../lock_setup.dart';
 import '../planner.dart';
 import '../theme.dart';
+import '../widgets.dart';
 
 /// Re-opens a strict session that was still running when the app was closed / restarted.
 Future<void> resumeStrictIfAny(BuildContext c) async {
@@ -173,10 +174,29 @@ class _StrictPageState extends State<StrictPage> {
         ]),
       ),
       SizedBox(height: 14),
-      Text(
-        'الختم الدراسي: لا يُسمح إلا بالاتصال الهاتفي. أي تطبيق آخر يُغلق فوراً ويعيدك المرشد إلى هذه الشاشة، '
-        'ولا يوجد زر خروج حتى تنتهي المدة التي حددتها. ينتهي تلقائياً بانتهاء الوقت حتى لو أُغلق التطبيق أو أُعيد تشغيل الهاتف.',
-        style: TextStyle(height: 1.6, fontSize: 13),
+      Panel(
+        color: kBrownLight,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Icon(Icons.info_outline, color: kBrownDark),
+            const SizedBox(width: 8),
+            Text('كيف يعمل، وما حدوده', style: TextStyle(fontWeight: FontWeight.w700, color: kBrownDark)),
+          ]),
+          const SizedBox(height: 8),
+          for (final line in const [
+            'يعمل عبر «خدمة تسهيلات الوصول»، وعليك تفعيلها مرة واحدة من إعدادات الهاتف.',
+            'أثناء الجلسة تُغطّى التطبيقات والنوافذ الأخرى ويعيدك المرشد إلى هذه الشاشة. الاتصال الهاتفي فقط مسموح.',
+            'ليس قفلاً مطلقاً: يمكن تجاوزه بإيقاف الخدمة من إعدادات الهاتف أو بالإقلاع في الوضع الآمن، وقد يختلف سلوكه من شركة هاتف إلى أخرى.',
+            'ينتهي تلقائياً بانتهاء المدة التي حددتها، حتى لو أُغلق التطبيق أو أُعيد تشغيل الهاتف.',
+          ])
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('•  ', style: TextStyle(color: kBrownDark)),
+                Expanded(child: Text(line, style: TextStyle(height: 1.55, fontSize: 13, color: kInk))),
+              ]),
+            ),
+        ]),
       ),
       SizedBox(height: 18),
       FilledButton.icon(onPressed: _start, icon: Icon(Icons.lock_clock), label: Text('ابدأ الختم الدراسي')),
