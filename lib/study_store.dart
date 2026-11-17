@@ -48,12 +48,12 @@ Future<StudyData> loadStudy() async {
     if (!await f.exists()) {
       if (backup != null) {
         studyLoadNotice.value = 'استُعيدت بياناتك من النسخة الاحتياطية الداخلية.';
-        return _afterLoad(backup);
+        return await _afterLoad(backup);
       }
       return StudyData();
     }
     final d = _tryDecode(await f.readAsString());
-    if (d != null) return _afterLoad(d);
+    if (d != null) return await _afterLoad(d);
     // The file is damaged: keep it for inspection, then fall back to the backup.
     final aside = '${f.path}.corrupt-${DateTime.now().millisecondsSinceEpoch}';
     try {
@@ -62,7 +62,7 @@ Future<StudyData> loadStudy() async {
     if (backup != null) {
       studyLoadNotice.value = 'كان ملف البيانات تالفاً، فاستُعيدت بياناتك من النسخة الاحتياطية الداخلية.';
       await saveStudy(backup);
-      return _afterLoad(backup);
+      return await _afterLoad(backup);
     }
     studyLoadNotice.value = 'تعذّرت قراءة ملف البيانات. حُفظت نسخة منه جانباً وبدأت بيانات جديدة.';
     return StudyData();
