@@ -39,21 +39,71 @@ object Notifier {
         return PendingIntent.getBroadcast(ctx, id, i, FLAGS)
     }
 
-    fun schedule(ctx: Context, id: Int, atMs: Long, title: String, body: String) {
+    // AlarmManager forgets every alarm when the phone restarts, so each scheduled reminder is also saved
+    // here; BootReceiver re-arms the ones still in the future after a restart / clock / time-zone change.
+    private const val STORE = "reminders"
+    private fun store(ctx: Context) = ctx.getSharedPreferences(STORE, Context.MODE_PRIVATE)
+
+    // Inexact alarms (setAndAllowWhileIdle) need no special permission and are fine for study reminders.
+    private fun arm(ctx: Context, id: Int, atMs: Long, title: String, body: String) {
         val am = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val pi = alarmIntent(ctx, id, title, body)
         if (Build.VERSION.SDK_INT >= 23) am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMs, pi)
         else am.set(AlarmManager.RTC_WAKEUP, atMs, pi)
     }
 
+    fun schedule(ctx: Context, id: Int, atMs: Long, title: String, body: String) {
+        val o = org.json.JSONObject().put("at", atMs).put("title", title).put("body", body)
+        store(ctx).edit().putString(id.toString(), o.toString()).apply()
+        arm(ctx, id, atMs, title, body)
+    }
+
     fun cancel(ctx: Context, id: Int) {
+        store(ctx).edit().remove(id.toString()).apply()
         val am = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         am.cancel(alarmIntent(ctx, id, "", ""))
+    }
+
+    // Called when a reminder fired: it no longer needs to be re-armed after a restart.
+    fun fired(ctx: Context, id: Int) {
+        store(ctx).edit().remove(id.toString()).apply()
+    }
+
+    // Re-arms every saved reminder that is still in the future; drops the old or broken ones.
+    fun rearmAll(ctx: Context) {
+        val p = store(ctx)
+        val now = System.currentTimeMillis()
+        val edit = p.edit()
+        for ((k, v) in p.all) {
+            try {
+                val o = org.json.JSONObject(v as String)
+                val at = o.getLong("at")
+                if (at <= now) { edit.remove(k); continue }
+                arm(ctx, k.toInt(), at, o.optString("title"), o.optString("body"))
+            } catch (e: Exception) {
+                edit.remove(k)
+            }
+        }
+        edit.apply()
+    }
+}
+
+// Phone restarted / clock changed / time zone changed / app updated: put the reminders back.
+class BootReceiver : BroadcastReceiver() {
+    override fun onReceive(ctx: Context, i: Intent) {
+        when (i.action) {
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED,
+            Intent.ACTION_MY_PACKAGE_REPLACED -> Notifier.rearmAll(ctx)
+        }
     }
 }
 
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, i: Intent) {
-        Notifier.show(ctx, i.getIntExtra("id", 0), i.getStringExtra("title") ?: "المرشد الدراسي", i.getStringExtra("body") ?: "")
+        val id = i.getIntExtra("id", 0)
+        Notifier.fired(ctx, id)
+        Notifier.show(ctx, id, i.getStringExtra("title") ?: "المرشد الدراسي", i.getStringExtra("body") ?: "")
     }
 }

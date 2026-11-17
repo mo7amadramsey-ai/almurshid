@@ -7,7 +7,7 @@ import '../widgets.dart';
 
 const _months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
 const _satFirst = ['س', 'أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع'];
-const _examColor = Color(0xFF9A4A1F);
+Color get _examColor => kWarnText;
 
 class _DayInfo {
   final List<String> exams = [];
@@ -31,7 +31,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Map<DateTime, _DayInfo> _collect() {
     final m = <DateTime, _DayInfo>{};
     _DayInfo at(DateTime d) => m.putIfAbsent(dOnly(d), () => _DayInfo());
-    for (final c in app.tree?.courses ?? const []) {
+    for (final c in app.tree?.courses ?? []) {
       final e = app.data.courses[c.id]?.exam;
       if (e != null) at(e).exams.add(c.title);
     }
@@ -39,7 +39,7 @@ class _CalendarPageState extends State<CalendarPage> {
       final d = t.item.due;
       if (d != null) at(d).due.add(t);
     }
-    for (final d in app.plan?.days ?? const <DayPlan>[]) {
+    for (final d in app.plan?.days ?? <DayPlan>[]) {
       if (d.slots.isNotEmpty) at(d.date).plan = d;
     }
     return m;
@@ -49,16 +49,16 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('التقويم')),
+        appBar: AppBar(title: Text('التقويم')),
         body: ListenableBuilder(
           listenable: app,
           builder: (c, _) {
             final info = _collect();
-            return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 28), children: [
-              Panel(child: Column(children: [_header(), const SizedBox(height: 8), _weekdays(), const SizedBox(height: 4), _grid(info)])),
-              const SizedBox(height: 8),
+            return ListView(padding: EdgeInsets.fromLTRB(16, 4, 16, 28), children: [
+              Panel(child: Column(children: [_header(), SizedBox(height: 8), _weekdays(), SizedBox(height: 4), _grid(info)])),
+              SizedBox(height: 8),
               _legend(),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _details(info[sel]),
             ]);
           },
@@ -66,15 +66,15 @@ class _CalendarPageState extends State<CalendarPage> {
       );
 
   Widget _header() => Row(children: [
-        IconButton(onPressed: () => _shift(-1), icon: const Icon(Icons.chevron_right)),
+        IconButton(onPressed: () => _shift(-1), icon: Icon(Icons.chevron_right)),
         Expanded(
             child: Text('${_months[month.month - 1]} ${month.year}',
-                textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
-        IconButton(onPressed: () => _shift(1), icon: const Icon(Icons.chevron_left)),
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
+        IconButton(onPressed: () => _shift(1), icon: Icon(Icons.chevron_left)),
       ]);
 
   Widget _weekdays() => Row(children: [
-        for (final w in _satFirst) Expanded(child: Center(child: Text(w, style: const TextStyle(fontSize: 12, color: kMoss, fontWeight: FontWeight.w700)))),
+        for (final w in _satFirst) Expanded(child: Center(child: Text(w, style: TextStyle(fontSize: 12, color: kMoss, fontWeight: FontWeight.w700)))),
       ]);
 
   Widget _grid(Map<DateTime, _DayInfo> info) {
@@ -92,7 +92,7 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Widget _cell(int n, int days, Map<DateTime, _DayInfo> info, DateTime today) {
-    if (n < 1 || n > days) return const SizedBox(height: 54);
+    if (n < 1 || n > days) return SizedBox(height: 54);
     final d = DateTime(month.year, month.month, n);
     final i = info[d];
     final isSel = d == sel, isToday = d == today;
@@ -101,7 +101,7 @@ class _CalendarPageState extends State<CalendarPage> {
       onTap: () => setState(() => sel = d),
       child: Container(
         height: 54,
-        margin: const EdgeInsets.all(2),
+        margin: EdgeInsets.all(2),
         decoration: BoxDecoration(
           color: isSel ? kForest : (isToday ? kSurface2 : Colors.transparent),
           borderRadius: BorderRadius.circular(12),
@@ -109,7 +109,7 @@ class _CalendarPageState extends State<CalendarPage> {
         ),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Text('$n', style: TextStyle(fontWeight: FontWeight.w700, color: isSel ? Colors.white : kInk)),
-          const SizedBox(height: 3),
+          SizedBox(height: 3),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             if (i != null && i.exams.isNotEmpty) _dot(_examColor, isSel),
             if (i != null && i.due.isNotEmpty) _dot(kGold, isSel),
@@ -123,13 +123,13 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget _dot(Color c, bool onSel) => Container(
         width: 7,
         height: 7,
-        margin: const EdgeInsets.symmetric(horizontal: 1.5),
+        margin: EdgeInsets.symmetric(horizontal: 1.5),
         decoration: BoxDecoration(color: onSel ? Colors.white : c, shape: BoxShape.circle),
       );
 
   Widget _legend() => Wrap(spacing: 16, runSpacing: 4, alignment: WrapAlignment.center, children: [
-        for (final e in const [('امتحان', _examColor), ('تسليم', kGold), ('دراسة', kMoss)])
-          Row(mainAxisSize: MainAxisSize.min, children: [_dot(e.$2, false), Text(' ${e.$1}', style: const TextStyle(fontSize: 12.5))]),
+        for (final e in [('امتحان', _examColor), ('تسليم', kGold), ('دراسة', kMoss)])
+          Row(mainAxisSize: MainAxisSize.min, children: [_dot(e.$2, false), Text(' ${e.$1}', style: TextStyle(fontSize: 12.5))]),
       ]);
 
   Widget _details(_DayInfo? i) {
@@ -137,9 +137,9 @@ class _CalendarPageState extends State<CalendarPage> {
     final empty = i == null || (i.exams.isEmpty && i.due.isEmpty && i.plan == null);
     return Panel(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(head, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-        const Divider(height: 18),
-        if (empty) const Text('لا شيء في هذا اليوم.'),
+        Text(head, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        Divider(height: 18),
+        if (empty) Text('لا شيء في هذا اليوم.'),
         if (i != null) ...[
           for (final e in i.exams)
             _line(Icons.school, _examColor, 'امتحان $e', null),
@@ -147,8 +147,8 @@ class _CalendarPageState extends State<CalendarPage> {
             _line(Icons.assignment_late_outlined, kGold, t.title, '${t.courseTitle}  ·  آخر موعد ${_hm(t.item.due!)}'
                 '${t.item.submitted == true ? '  ·  تم التسليم' : ''}'),
           if (i.plan != null) ...[
-            const SizedBox(height: 6),
-            Text('خطة الدراسة · ${fmtMin(i.plan!.used)}', style: const TextStyle(fontWeight: FontWeight.w700, color: kMoss)),
+            SizedBox(height: 6),
+            Text('خطة الدراسة · ${fmtMin(i.plan!.used)}', style: TextStyle(fontWeight: FontWeight.w700, color: kMoss)),
             for (final s in i.plan!.slots) _line(kindIcon(s.task.kind), s.task.done ? kForest : kMoss, s.task.title, '${s.task.courseTitle}  ·  ${fmtMin(s.minutes)}'),
           ],
         ],
@@ -157,13 +157,13 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Widget _line(IconData ic, Color c, String title, String? sub) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5),
+        padding: EdgeInsets.symmetric(vertical: 5),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Icon(ic, size: 20, color: c),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w600, height: 1.3)),
-            if (sub != null) Text(sub, style: const TextStyle(fontSize: 12.5, height: 1.4)),
+            Text(title, style: TextStyle(fontWeight: FontWeight.w600, height: 1.3)),
+            if (sub != null) Text(sub, style: TextStyle(fontSize: 12.5, height: 1.4)),
           ])),
         ]),
       );

@@ -175,4 +175,18 @@ void main() {
     final tree = await Crawler(site.fetch).crawl([CourseLink('4', 'x', '$host/course/view.php?id=4')]);
     expect(tree.courses.single.sections.map((s) => s.title).toList(), ['Intro', 'Topic 1']);
   });
+
+  test('a reused Crawler starts every run with fresh progress numbers', () async {
+    final site = FakeSite({
+      '$host/course/view.php?id=6': html('$host/course/view.php?id=6',
+          '<div id="region-main"><h1>C6</h1><li class="section course-section" data-sectionname="S"><a href="/mod/page/view.php?id=60">p</a></li></div>'),
+    });
+    final crawler = Crawler(site.fetch);
+    final link = CourseLink('6', 'x', '$host/course/view.php?id=6');
+    var firstFetched = 0, secondFetched = 0;
+    await crawler.crawl([link], onProgress: (p) => firstFetched = p.fetched);
+    await crawler.crawl([link], onProgress: (p) => secondFetched = p.fetched);
+    expect(firstFetched, greaterThan(0));
+    expect(secondFetched, firstFetched);
+  });
 }

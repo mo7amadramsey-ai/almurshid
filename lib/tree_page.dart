@@ -47,16 +47,16 @@ class TreePage extends StatelessWidget {
     final counts = tree.countByKind().entries.toList()..sort((a, b) => b.value.compareTo(a.value));
     return Scaffold(
       appBar: AppBar(
-        title: const Text('شجرة المواد'),
+        title: Text('شجرة المواد'),
         actions: [
           IconButton(
             tooltip: 'نسخ الشجرة كنص',
-            icon: const Icon(Icons.copy_all_outlined),
+            icon: Icon(Icons.copy_all_outlined),
             onPressed: () => _copy(context, tree.toText(), 'تم نسخ الشجرة'),
           ),
         ],
       ),
-      body: ListView(padding: const EdgeInsets.fromLTRB(14, 4, 14, 24), children: [
+      body: ListView(padding: EdgeInsets.fromLTRB(14, 4, 14, 24), children: [
         Wrap(spacing: 8, runSpacing: 8, children: [
           for (final e in counts)
             Chip(
@@ -66,7 +66,7 @@ class TreePage extends StatelessWidget {
               side: BorderSide.none,
             ),
         ]),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         for (final c in tree.courses) _courseTile(context, c),
         if (tree.errors.isNotEmpty) _errorsTile(context),
       ]),
@@ -76,13 +76,13 @@ class TreePage extends StatelessWidget {
   Widget _courseTile(BuildContext context, Course c) {
     final n = c.allItems.length;
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: EdgeInsets.only(bottom: 10),
       decoration: cardBox(),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          leading: const Icon(Icons.menu_book, color: kForest),
-          title: Text(c.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+          leading: Icon(Icons.menu_book, color: kForest),
+          title: Text(c.title, style: TextStyle(fontWeight: FontWeight.w700)),
           subtitle: Text('${c.sections.length} أقسام · $n عنصر'),
           children: [for (final s in c.sections) _sectionTile(context, s)],
         ),
@@ -93,8 +93,8 @@ class TreePage extends StatelessWidget {
   Widget _sectionTile(BuildContext context, Section s) => Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding: const EdgeInsetsDirectional.only(start: 22, end: 14),
-          title: Text(s.title, style: const TextStyle(fontSize: 14.5, color: kMoss, fontWeight: FontWeight.w700)),
+          tilePadding: EdgeInsetsDirectional.only(start: 22, end: 14),
+          title: Text(s.title, style: TextStyle(fontSize: 14.5, color: kMoss, fontWeight: FontWeight.w700)),
           children: [for (final i in s.items) _itemTile(context, i, 0)],
         ),
       );
@@ -107,8 +107,8 @@ class TreePage extends StatelessWidget {
         dense: true,
         contentPadding: pad,
         leading: leading,
-        title: Text(i.title, style: const TextStyle(fontSize: 14)),
-        subtitle: Text(kindLabels[i.kind]!, style: const TextStyle(fontSize: 11.5)),
+        title: Text(i.title, style: TextStyle(fontSize: 14)),
+        subtitle: Text(kindLabels[i.kind]!, style: TextStyle(fontSize: 11.5)),
         onTap: () => openItem(context, url: i.url, title: i.title, kind: i.kind),
         onLongPress: () => _copy(context, i.url, 'تم نسخ الرابط'),
       );
@@ -118,27 +118,27 @@ class TreePage extends StatelessWidget {
       child: ExpansionTile(
         tilePadding: pad,
         leading: leading,
-        title: Text(i.title, style: const TextStyle(fontSize: 14)),
-        subtitle: Text('${kindLabels[i.kind]} · ${i.children.length}', style: const TextStyle(fontSize: 11.5)),
+        title: Text(i.title, style: TextStyle(fontSize: 14)),
+        subtitle: Text('${kindLabels[i.kind]} · ${i.children.length}', style: TextStyle(fontSize: 11.5)),
         children: [for (final k in i.children) _itemTile(context, k, depth + 1)],
       ),
     );
   }
 
   Widget _errorsTile(BuildContext context) => Container(
-        margin: const EdgeInsets.only(top: 6),
+        margin: EdgeInsets.only(top: 6),
         decoration: cardBox(),
         child: Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
-            leading: const Icon(Icons.warning_amber_rounded, color: kMoss),
+            leading: Icon(Icons.warning_amber_rounded, color: kMoss),
             title: Text('أخطاء الزحف (${tree.errors.length})'),
             children: [
               for (final e in tree.errors.take(100))
                 ListTile(
                   dense: true,
-                  title: Text(e.reason, style: const TextStyle(fontSize: 13)),
-                  subtitle: Text(e.url, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11)),
+                  title: Text(e.reason, style: TextStyle(fontSize: 13)),
+                  subtitle: Text(e.url, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11)),
                 ),
             ],
           ),

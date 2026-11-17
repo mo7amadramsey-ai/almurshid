@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -7,7 +6,9 @@ import '../app_state.dart';
 import '../channel.dart';
 import '../lock_setup.dart';
 import '../planner.dart';
+import '../strict_info.dart';
 import '../theme.dart';
+import '../widgets.dart';
 
 /// Re-opens a strict session that was still running when the app was closed / restarted.
 Future<void> resumeStrictIfAny(BuildContext c) async {
@@ -81,7 +82,7 @@ class _StrictPageState extends State<StrictPage> {
   void _run() {
     WakelockPlus.enable();
     timer?.cancel();
-    timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+    timer = Timer.periodic(Duration(seconds: 1), (_) => _tick());
   }
 
   Future<void> _start() async {
@@ -89,15 +90,15 @@ class _StrictPageState extends State<StrictPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('تأكيد الختم الدراسي'),
+        title: Text('تأكيد الختم الدراسي'),
         content: Text(
           'سيُغلق هاتفك على «المرشد» لمدة ${_dur(minutes)}، ولن تستطيع الخروج قبل انتهائها. '
           'يبقى الاتصال الهاتفي فقط.\n\nهل أنت متأكد؟',
-          style: const TextStyle(height: 1.6),
+          style: TextStyle(height: 1.6),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('ابدأ الختم')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('إلغاء')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text('ابدأ الختم')),
         ],
       ),
     );
@@ -143,8 +144,8 @@ class _StrictPageState extends State<StrictPage> {
     return PopScope(
       canPop: !running,
       child: Scaffold(
-        appBar: AppBar(title: const Text('الختم الدراسي'), automaticallyImplyLeading: !running),
-        body: SafeArea(child: Padding(padding: const EdgeInsets.all(20), child: running ? _running() : (finished ? _done() : _intro()))),
+        appBar: AppBar(title: Text('الختم الدراسي'), automaticallyImplyLeading: !running),
+        body: SafeArea(child: Padding(padding: EdgeInsets.all(20), child: running ? _running() : (finished ? _done() : _intro()))),
       ),
     );
   }
@@ -154,75 +155,98 @@ class _StrictPageState extends State<StrictPage> {
     return ListView(children: [
       Container(
         decoration: cardBox(22),
-        padding: const EdgeInsets.all(18),
+        padding: EdgeInsets.all(18),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, height: 1.4)),
-          if (t != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(t.courseTitle, style: const TextStyle(color: kMoss))),
-          const SizedBox(height: 20),
-          const Text('مدة الختم', style: TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
+          Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, height: 1.4)),
+          if (t != null) Padding(padding: EdgeInsets.only(top: 4), child: Text(t.courseTitle, style: TextStyle(color: kMoss))),
+          SizedBox(height: 20),
+          Text('مدة الختم', style: TextStyle(fontWeight: FontWeight.w700)),
+          SizedBox(height: 8),
           Wrap(spacing: 8, runSpacing: 8, children: [
             for (final m in _presets)
               ChoiceChip(label: Text(_dur(m)), selected: minutes == m, onSelected: (_) => setState(() => minutes = m)),
           ]),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            IconButton(onPressed: minutes > 5 ? () => setState(() => minutes -= 5) : null, icon: const Icon(Icons.remove_circle_outline, size: 32)),
-            SizedBox(width: 140, child: Text(_dur(minutes), textAlign: TextAlign.center, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800))),
-            IconButton(onPressed: minutes < 360 ? () => setState(() => minutes += 5) : null, icon: const Icon(Icons.add_circle_outline, size: 32)),
+            IconButton(onPressed: minutes > 5 ? () => setState(() => minutes -= 5) : null, icon: Icon(Icons.remove_circle_outline, size: 32)),
+            SizedBox(width: 140, child: Text(_dur(minutes), textAlign: TextAlign.center, style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800))),
+            IconButton(onPressed: minutes < 360 ? () => setState(() => minutes += 5) : null, icon: Icon(Icons.add_circle_outline, size: 32)),
           ]),
-          const Text('تحدد المدة بنفسك (من 5 دقائق إلى 6 ساعات).', style: TextStyle(fontSize: 12.5, height: 1.5)),
+          Text('تحدد المدة بنفسك (من 5 دقائق إلى 6 ساعات).', style: TextStyle(fontSize: 12.5, height: 1.5)),
         ]),
       ),
-      const SizedBox(height: 14),
-      const Text(
-        'الختم الدراسي: لا يُسمح إلا بالاتصال الهاتفي. أي تطبيق آخر يُغلق فوراً ويعيدك المرشد إلى هذه الشاشة، '
-        'ولا يوجد زر خروج حتى تنتهي المدة التي حددتها. ينتهي تلقائياً بانتهاء الوقت حتى لو أُغلق التطبيق أو أُعيد تشغيل الهاتف.',
-        style: TextStyle(height: 1.6, fontSize: 13),
+      SizedBox(height: 14),
+      Panel(
+        color: kBrownLight,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Icon(Icons.info_outline, color: kBrownDark),
+            const SizedBox(width: 8),
+            Text('كيف يعمل، وما حدوده', style: TextStyle(fontWeight: FontWeight.w700, color: kBrownDark)),
+          ]),
+          const SizedBox(height: 8),
+          for (final line in const [
+            'يعمل عبر «خدمة تسهيلات الوصول»، وعليك تفعيلها مرة واحدة من إعدادات الهاتف.',
+            'أثناء الجلسة تُغطّى التطبيقات والنوافذ الأخرى ويعيدك المرشد إلى هذه الشاشة. الاتصال الهاتفي فقط مسموح.',
+            'ليس قفلاً مطلقاً: يمكن تجاوزه بإيقاف الخدمة من إعدادات الهاتف أو بالإقلاع في الوضع الآمن، وقد يختلف سلوكه من شركة هاتف إلى أخرى.',
+            'ينتهي تلقائياً بانتهاء المدة التي حددتها، حتى لو أُغلق التطبيق أو أُعيد تشغيل الهاتف.',
+          ])
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('•  ', style: TextStyle(color: kBrownDark)),
+                Expanded(child: Text(line, style: TextStyle(height: 1.55, fontSize: 13, color: kInk))),
+              ]),
+            ),
+        ]),
       ),
-      const SizedBox(height: 18),
-      FilledButton.icon(onPressed: _start, icon: const Icon(Icons.lock_clock), label: const Text('ابدأ الختم الدراسي')),
+      TextButton(
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StrictInfoPage())),
+        child: const Text('تفاصيل أكثر عن الصلاحيات والحدود'),
+      ),
+      SizedBox(height: 10),
+      FilledButton.icon(onPressed: _start, icon: Icon(Icons.lock_clock), label: Text('ابدأ الختم الدراسي')),
     ]);
   }
 
   Widget _running() {
     final p = totalMs <= 0 ? 0.0 : (1 - leftMs / totalMs).clamp(0.0, 1.0);
     return Column(children: [
-      const Spacer(),
-      Text(title, textAlign: TextAlign.center, maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, height: 1.5)),
-      const SizedBox(height: 28),
+      Spacer(),
+      Text(title, textAlign: TextAlign.center, maxLines: 3, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, height: 1.5)),
+      SizedBox(height: 28),
       SizedBox(
         width: 250,
         height: 250,
         child: Stack(alignment: Alignment.center, children: [
           SizedBox.expand(child: CircularProgressIndicator(value: p, strokeWidth: 12, color: kForest, backgroundColor: kSurface2)),
-          Text(_mmss(leftMs), style: const TextStyle(fontSize: 52, fontWeight: FontWeight.w800, fontFeatures: [FontFeature.tabularFigures()])),
+          Text(_mmss(leftMs), style: TextStyle(fontSize: 52, fontWeight: FontWeight.w800, fontFeatures: [FontFeature.tabularFigures()])),
         ]),
       ),
-      const SizedBox(height: 28),
-      const Text('ختم دراسي: ركّز. لا خروج حتى ينتهي الوقت.', style: TextStyle(height: 1.5)),
-      const Spacer(),
-      OutlinedButton.icon(onPressed: () => ch.invokeMethod('openDialer'), icon: const Icon(Icons.call), label: const Text('اتصال')),
+      SizedBox(height: 28),
+      Text('ختم دراسي: ركّز. لا خروج حتى ينتهي الوقت.', style: TextStyle(height: 1.5)),
+      Spacer(),
+      OutlinedButton.icon(onPressed: () => ch.invokeMethod('openDialer'), icon: Icon(Icons.call), label: Text('اتصال')),
     ]);
   }
 
   Widget _done() {
     final t = widget.task;
     return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      const Icon(Icons.check_circle, size: 88, color: kForest),
-      const SizedBox(height: 12),
-      const Text('أحسنت، انتهى الختم الدراسي', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-      const SizedBox(height: 24),
+      Icon(Icons.check_circle, size: 88, color: kForest),
+      SizedBox(height: 12),
+      Text('أحسنت، انتهى الختم الدراسي', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+      SizedBox(height: 24),
       if (t != null && !t.done)
         FilledButton.icon(
             onPressed: () async {
               await app.toggle(t);
               if (mounted) Navigator.pop(context);
             },
-            icon: const Icon(Icons.done_all),
-            label: const Text('أنجزت المهمة')),
-      const SizedBox(height: 10),
-      OutlinedButton(onPressed: () => setState(() => finished = false), child: const Text('جلسة أخرى')),
-      TextButton(onPressed: () => Navigator.pop(context), child: const Text('خروج')),
+            icon: Icon(Icons.done_all),
+            label: Text('أنجزت المهمة')),
+      SizedBox(height: 10),
+      OutlinedButton(onPressed: () => setState(() => finished = false), child: Text('جلسة أخرى')),
+      TextButton(onPressed: () => Navigator.pop(context), child: Text('خروج')),
     ]);
   }
 }

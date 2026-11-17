@@ -10,6 +10,7 @@ dependencies:
   webview_flutter: ^4.9.0
   webview_flutter_android: any
   html: ^0.15.4
+  flutter_secure_storage: ^9.2.2   # AI key in Android Keystore
   path_provider: ^2.1.0
   wakelock_plus: ^1.2.0
 dev_dependencies:
@@ -17,6 +18,15 @@ dev_dependencies:
     sdk: flutter
 flutter:
   uses-material-design: true
+  fonts:
+    - family: IBMPlexArabic
+      fonts:
+        - asset: assets/fonts/IBMPlexSansArabic-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSansArabic-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/IBMPlexSansArabic-Bold.ttf
+          weight: 700
   assets:
     - assets/bg_tile.png
     - assets/logo.png

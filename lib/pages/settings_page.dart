@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../secrets.dart';
 import '../ai.dart';
+import '../data_panel.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import '../tree_page.dart';
@@ -43,7 +45,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final m = t.hour * 60 + t.minute;
     final ok = start ? s.windowEnd - m >= 60 : m - s.windowStart >= 60;
     if (!ok) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يجب أن تكون النافذة ساعة على الأقل')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('يجب أن تكون النافذة ساعة على الأقل')));
       return;
     }
     if (start) {
@@ -59,16 +61,33 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     final s = app.settings;
     return Scaffold(
-      appBar: AppBar(title: const Text('الإعدادات')),
-      body: ListView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 32), children: [
+      appBar: AppBar(title: Text('الإعدادات')),
+      body: ListView(padding: EdgeInsets.fromLTRB(16, 0, 16, 32), children: [
+        const Heading('المظهر'),
+        Panel(
+          child: SegmentedButton<String>(
+            style: SegmentedButton.styleFrom(selectedBackgroundColor: kTint, selectedForegroundColor: kForest),
+            segments: const <ButtonSegment<String>>[
+              ButtonSegment(value: 'system', label: Text('تلقائي'), icon: Icon(Icons.brightness_auto)),
+              ButtonSegment(value: 'light', label: Text('فاتح'), icon: Icon(Icons.light_mode_outlined)),
+              ButtonSegment(value: 'dark', label: Text('داكن'), icon: Icon(Icons.dark_mode_outlined)),
+            ],
+            selected: {s.themeMode},
+            onSelectionChanged: (v) {
+              s.themeMode = v.first;
+              app.commit();
+              setState(() {});
+            },
+          ),
+        ),
         const Heading('وقت الدراسة'),
         Panel(
           child: Column(children: [
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               activeColor: kForest,
-              title: const Text('أنا متعب هذه الفترة'),
-              subtitle: const Text('يخفض ساعات كل يوم 25% حتى لا تُحمَّل أكثر من طاقتك'),
+              title: Text('أنا متعب هذه الفترة'),
+              subtitle: Text('يخفض ساعات كل يوم 25% حتى لا تُحمَّل أكثر من طاقتك'),
               value: s.tired,
               onChanged: (v) {
                 s.tired = v;
@@ -76,7 +95,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 setState(() {});
               },
             ),
-            const Divider(),
+            Divider(),
             for (var i = 0; i < 7; i++)
               Row(children: [
                 SizedBox(width: 70, child: Text(weekdayNames[i])),
@@ -96,28 +115,28 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 SizedBox(width: 44, child: Text('${s.hours[i].toStringAsFixed(1)} س', textAlign: TextAlign.end)),
               ]),
-            const Divider(),
+            Divider(),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('بداية وقت الدراسة المسموح'),
-              subtitle: const Text('لا تُرسَل تذكيرات قبلها، ولا تتجاوز الخطة طول النافذة'),
-              trailing: Text(_fmtMin(s.windowStart), style: const TextStyle(fontWeight: FontWeight.w800)),
+              title: Text('بداية وقت الدراسة المسموح'),
+              subtitle: Text('لا تُرسَل تذكيرات قبلها، ولا تتجاوز الخطة طول النافذة'),
+              trailing: Text(_fmtMin(s.windowStart), style: TextStyle(fontWeight: FontWeight.w800)),
               onTap: () => _pickWindow(start: true),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('نهاية وقت الدراسة المسموح'),
-              trailing: Text(_fmtMin(s.windowEnd), style: const TextStyle(fontWeight: FontWeight.w800)),
+              title: Text('نهاية وقت الدراسة المسموح'),
+              trailing: Text(_fmtMin(s.windowEnd), style: TextStyle(fontWeight: FontWeight.w800)),
               onTap: () => _pickWindow(start: false),
             ),
-            const Divider(),
+            Divider(),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('أيام الأمان قبل كل امتحان'),
-              subtitle: const Text('أيام تُترك فارغة للمراجعة، ولا تُستخدم إلا إذا ضاق الوقت'),
+              title: Text('أيام الأمان قبل كل امتحان'),
+              subtitle: Text('أيام تُترك فارغة للمراجعة، ولا تُستخدم إلا إذا ضاق الوقت'),
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                 IconButton(
-                    icon: const Icon(Icons.remove_circle_outline),
+                    icon: Icon(Icons.remove_circle_outline),
                     onPressed: s.bufferDays > 0
                         ? () {
                             s.bufferDays--;
@@ -125,9 +144,9 @@ class _SettingsPageState extends State<SettingsPage> {
                             setState(() {});
                           }
                         : null),
-                Text('${s.bufferDays}', style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text('${s.bufferDays}', style: TextStyle(fontWeight: FontWeight.w800)),
                 IconButton(
-                    icon: const Icon(Icons.add_circle_outline),
+                    icon: Icon(Icons.add_circle_outline),
                     onPressed: s.bufferDays < 7
                         ? () {
                             s.bufferDays++;
@@ -139,9 +158,9 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('آخر يوم دراسة (تحدده أنت)'),
+              title: Text('آخر يوم دراسة (تحدده أنت)'),
               subtitle: Text('${fmtDm(s.deadline)}/${s.deadline.year}  •  المواد التي لها موعد امتحان تتوقف قبله بيوم'),
-              trailing: const Icon(Icons.event_outlined),
+              trailing: Icon(Icons.event_outlined),
               onTap: () async {
                 final d = await pickDate(context, s.deadline);
                 if (d != null) {
@@ -151,7 +170,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
               },
             ),
-            Text('معامل وقت الفيديو: ${s.videoFactor.toStringAsFixed(2)}×  (للإيقاف والتدوين)', style: const TextStyle(height: 1.5)),
+            Text('معامل وقت الفيديو: ${s.videoFactor.toStringAsFixed(2)}×  (للإيقاف والتدوين)', style: TextStyle(height: 1.5)),
             Slider(
               value: s.videoFactor,
               min: 1,
@@ -166,20 +185,20 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ]),
         ),
-        const Heading('الذكاء الاصطناعي'),
+        Heading('الذكاء الاصطناعي'),
         Panel(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text(
+            Text(
               'اختر أي خدمة تريدها. فيه خيارات مجانية (Gemini وGroq وOpenRouter) بمفتاح تأخذه مجاناً من موقع الخدمة، '
               'ولا تحتاج حساب Claude. المفتاح يُحفظ على هاتفك فقط ويُرسل لخدمتك أنت فقط. '
               'يرى الذكاء الاصطناعي عناوين المواد وخطتك، لا كلمة سرك ولا ملفاتك.',
               style: TextStyle(height: 1.6, fontSize: 13),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             DropdownButtonFormField<String>(
               value: providerById(s.provider).id,
               isExpanded: true,
-              decoration: const InputDecoration(labelText: 'الخدمة'),
+              decoration: InputDecoration(labelText: 'الخدمة'),
               items: [for (final p in aiProviders) DropdownMenuItem(value: p.id, child: Text(p.name))],
               onChanged: (v) {
                 if (v == null) return;
@@ -191,7 +210,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 setState(() {});
               },
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Builder(builder: (_) {
               final p = providerById(s.provider);
               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -206,14 +225,39 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   onChanged: (v) => s.apiKey = v.trim(),
                 ),
-                const SizedBox(height: 10),
+                ValueListenableBuilder<bool>(
+                  valueListenable: keystoreFailed,
+                  builder: (_, failed, __) => Padding(
+                    padding: EdgeInsets.only(top: 6),
+                    child: Row(children: [
+                      Expanded(
+                        child: Text(
+                          failed
+                              ? 'تعذّر الحفظ الآمن للمفتاح على هذا الجهاز؛ لن يُحفظ بنص عادي. أعد إدخاله عند الحاجة.'
+                              : 'يُحفظ المفتاح مشفّراً داخل مخزن الأمان في الهاتف، ولا يدخل في ملفات الدراسة.',
+                          style: TextStyle(fontSize: 12, height: 1.5, color: failed ? kWarn : null),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          key.clear();
+                          s.apiKey = '';
+                          app.commit();
+                          setState(() {});
+                        },
+                        child: Text('حذف المفتاح'),
+                      ),
+                    ]),
+                  ),
+                ),
+                SizedBox(height: 10),
                 TextField(
                   controller: model,
                   textDirection: TextDirection.ltr,
                   decoration: InputDecoration(labelText: 'النموذج', hintText: p.model, helperText: 'اتركه فارغاً لاستعمال: ${p.model}'),
                   onChanged: (v) => s.model = v.trim(),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 TextField(
                   controller: baseUrl,
                   textDirection: TextDirection.ltr,
@@ -222,23 +266,25 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ]);
             }),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             FilledButton(
               onPressed: () async {
                 await app.commit();
                 if (context.mounted) toast(context, 'تم الحفظ');
               },
-              child: const Text('حفظ'),
+              child: Text('حفظ'),
             ),
           ]),
         ),
-        const Heading('أدوات'),
+        const Heading('الأمان والخصوصية'),
+        const DataPrivacyPanel(),
+        Heading('أدوات'),
         Panel(
           child: ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.account_tree_outlined, color: kMoss),
-            title: const Text('شجرة المواد الخام'),
-            subtitle: const Text('للفحص ونسخ الشجرة كنص'),
+            leading: Icon(Icons.account_tree_outlined, color: kMoss),
+            title: Text('شجرة المواد الخام'),
+            subtitle: Text('للفحص ونسخ الشجرة كنص'),
             onTap: app.tree == null ? null : () => Navigator.push(context, MaterialPageRoute(builder: (_) => TreePage(tree: app.tree!))),
           ),
         ),

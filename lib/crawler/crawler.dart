@@ -65,11 +65,12 @@ class Crawler {
   late Pool _pool;
   final _visited = <String>{};
   final _errors = <CrawlError>[];
-  final _progress = CrawlProgress();
+  var _progress = CrawlProgress();
   void Function(CrawlProgress)? _onProgress;
 
   Future<Tree> crawl(List<CourseLink> links, {void Function(CrawlProgress)? onProgress}) async {
     _pool = Pool(concurrency);
+    _progress = CrawlProgress(); // a reused Crawler must not show numbers from the previous run
     _visited.clear();
     _errors.clear();
     _onProgress = onProgress;

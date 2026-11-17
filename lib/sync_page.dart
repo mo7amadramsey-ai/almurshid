@@ -113,7 +113,7 @@ class _SyncPageState extends State<SyncPage> {
     var links = <CourseLink>[];
     for (var i = 0; i < 12 && links.isEmpty; i++) {
       links = await _linksFromPage();
-      if (links.isEmpty) await Future.delayed(const Duration(seconds: 1));
+      if (links.isEmpty) await Future.delayed(Duration(seconds: 1));
     }
     if (!mounted) return;
     if (links.isEmpty) {
@@ -164,7 +164,7 @@ class _SyncPageState extends State<SyncPage> {
           bottom: showWeb ? 0 : null,
           width: showWeb ? null : 2,
           height: showWeb ? null : 2,
-          child: WebViewWidget(key: const ValueKey('moodle-web'), controller: web),
+          child: WebViewWidget(key: ValueKey('moodle-web'), controller: web),
         ),
         if (showWeb)
           Positioned(
@@ -172,7 +172,7 @@ class _SyncPageState extends State<SyncPage> {
             right: 12,
             bottom: 12,
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12),
               decoration: cardBox(),
               child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(
@@ -180,13 +180,13 @@ class _SyncPageState extends State<SyncPage> {
                       (phase == _Phase.discover
                           ? 'جارٍ البحث عن موادك…'
                           : 'سجّل دخولك. بعد نجاح الدخول سيبدأ الاستيراد تلقائياً.'),
-                  style: const TextStyle(height: 1.4),
+                  style: TextStyle(height: 1.4),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: _busy && phase == _Phase.discover ? null : _discoverAndCrawl,
-                  icon: const Icon(Icons.download_outlined),
-                  label: const Text('استخراج المواد من هذه الصفحة'),
+                  icon: Icon(Icons.download_outlined),
+                  label: Text('استخراج المواد من هذه الصفحة'),
                 ),
               ]),
             ),
@@ -199,20 +199,20 @@ class _SyncPageState extends State<SyncPage> {
   Widget _progressView() {
     final p = progress;
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24),
       child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const LinearProgressIndicator(color: kForest, backgroundColor: kSurface2),
-        const SizedBox(height: 22),
-        Text('تمت قراءة ${p?.fetched ?? 0} صفحة', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 6),
+        LinearProgressIndicator(color: kForest, backgroundColor: kSurface2),
+        SizedBox(height: 22),
+        Text('تمت قراءة ${p?.fetched ?? 0} صفحة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+        SizedBox(height: 6),
         Text('قيد الانتظار: ${p?.pending ?? 0}   ·   أخطاء: ${p?.failed ?? 0}'),
-        const SizedBox(height: 14),
+        SizedBox(height: 14),
         Text(
           p?.last ?? '',
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           textDirection: TextDirection.ltr,
-          style: const TextStyle(fontSize: 11.5, color: kMoss),
+          style: TextStyle(fontSize: 11.5, color: kMoss),
         ),
       ]),
     );

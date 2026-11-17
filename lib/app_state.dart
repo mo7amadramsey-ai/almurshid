@@ -52,6 +52,35 @@ class AppState extends ChangeNotifier {
     _remTimer = Timer(const Duration(seconds: 2), () => rescheduleReminders(tree, data));
   }
 
+  /// Text of a backup of the student's own data (no AI key, no Moodle session).
+  Future<String> makeBackup() async => buildBackup(data, await loadLog());
+
+  /// Replaces the current study data with a backup. Returns an error message, or null on success.
+  /// The AI key stays as it is on this phone.
+  Future<String?> restoreBackup(String text) async {
+    try {
+      final r = parseBackup(text);
+      r.data.settings.apiKey = data.settings.apiKey;
+      data = r.data;
+      await saveLog(r.log);
+      await commit();
+      return null;
+    } catch (e) {
+      return e is String ? e : 'تعذّرت الاستعادة';
+    }
+  }
+
+  /// Deletes every local file, the AI key and the Moodle session, then shows an empty app.
+  Future<void> resetAll() async {
+    _remTimer?.cancel();
+    await wipeLocalData();
+    tree = null;
+    data = StudyData();
+    news = null;
+    rebuild();
+    notifyListeners();
+  }
+
   Future<void> toggle(Task t) async {
     final st = data.state(t.id);
     st.done = !st.done;

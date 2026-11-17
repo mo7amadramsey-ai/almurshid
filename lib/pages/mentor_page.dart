@@ -106,50 +106,90 @@ class _MentorPageState extends State<MentorPage> {
   }
 
   void _down() => WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (scroll.hasClients) scroll.animateTo(scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+        if (scroll.hasClients) scroll.animateTo(scroll.position.maxScrollExtent, duration: Duration(milliseconds: 250), curve: Curves.easeOut);
       });
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(listenable: app, builder: (c, _) {
         if (!aiReady(app.settings)) {
-          return const EmptyNote(
+          return EmptyNote(
             icon: Icons.auto_awesome,
             title: 'فعّل المرشد الذكي',
             body: 'اختر خدمة ذكاء اصطناعي وأضف مفتاحها من الإعدادات (أيقونة الترس). فيه خيارات مجانية مثل Gemini وGroq. يبقى المفتاح على هاتفك فقط.',
           );
         }
+        final prov = providerById(app.settings.provider);
+        final model = app.settings.model.trim().isEmpty ? prov.model : app.settings.model.trim();
         return Column(children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+            child: Row(children: [
+              Pill('${prov.name.split(' ').first}  ·  $model', icon: Icons.bolt),
+              const Spacer(),
+              if (msgs.isNotEmpty)
+                TextButton.icon(
+                  onPressed: busy ? null : () => setState(msgs.clear),
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('محادثة جديدة'),
+                ),
+            ]),
+          ),
           Expanded(
             child: msgs.isEmpty
                 ? ListView(controller: scroll, padding: const EdgeInsets.all(16), children: [
-                    const Text('اسألني أي شيء عن دراستك، أعرف خطتك ومواعيدك:', style: TextStyle(height: 1.6)),
-                    const SizedBox(height: 10),
-                    Wrap(spacing: 8, runSpacing: 8, children: [
-                      for (final q in const [
-                        'ماذا أدرس اليوم؟',
-                        'أنا متعب اليوم، ماذا أفعل؟',
-                        'هل أستطيع إنهاء كل شيء قبل الامتحانات؟',
-                        'ما أخطر مادة عندي الآن؟',
-                      ])
-                        ActionChip(label: Text(q), onPressed: () => _send(q)),
-                    ]),
+                    const SizedBox(height: 8),
+                    Center(child: Container(width: 64, height: 64, decoration: BoxDecoration(color: kTint, shape: BoxShape.circle), child: Icon(Icons.auto_awesome, color: kForest, size: 30))),
+                    const SizedBox(height: 12),
+                    const Text('مرشدك الدراسي', textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 6),
+                    Text('أعرف خطتك ومواعيدك. اسألني أو اختر سؤالاً:', textAlign: TextAlign.center, style: TextStyle(height: 1.6, color: kInk.withValues(alpha: 0.7))),
+                    const SizedBox(height: 14),
+                    for (final q in [
+                      'ماذا أدرس اليوم؟',
+                      'أنا متعب اليوم، ماذا أفعل؟',
+                      'هل أستطيع إنهاء كل شيء قبل الامتحانات؟',
+                      'ما أخطر مادة عندي الآن؟',
+                    ])
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Material(
+                          color: kSurface,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: kOutline)),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () => _send(q),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              child: Row(children: [
+                                Expanded(child: Text(q, style: const TextStyle(fontWeight: FontWeight.w600))),
+                                Icon(Icons.north_west, size: 18, color: kMoss),
+                              ]),
+                            ),
+                          ),
+                        ),
+                      ),
                   ])
                 : ListView.builder(
                     controller: scroll,
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     itemCount: msgs.length + (busy ? 1 : 0),
                     itemBuilder: (c, i) {
-                      if (i == msgs.length) return const Padding(padding: EdgeInsets.all(8), child: Align(alignment: AlignmentDirectional.centerStart, child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: kForest))));
+                      if (i == msgs.length) return Padding(padding: EdgeInsets.all(8), child: Align(alignment: AlignmentDirectional.centerStart, child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: kForest))));
                       final m = msgs[i];
                       return Align(
                         alignment: m.user ? AlignmentDirectional.centerEnd : AlignmentDirectional.centerStart,
                         child: Container(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          margin: EdgeInsets.only(bottom: 10),
+                          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.82),
                           decoration: BoxDecoration(
                             color: m.user ? kForest : kSurface,
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadiusDirectional.only(
+                              topStart: const Radius.circular(18),
+                              topEnd: const Radius.circular(18),
+                              bottomStart: Radius.circular(m.user ? 18 : 4),
+                              bottomEnd: Radius.circular(m.user ? 4 : 18),
+                            ),
                             border: m.user ? null : Border.all(color: kOutline),
                           ),
                           child: SelectableText(m.text, style: TextStyle(height: 1.55, color: m.user ? Colors.white : kInk)),
@@ -161,7 +201,7 @@ class _MentorPageState extends State<MentorPage> {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
+              padding: EdgeInsets.fromLTRB(12, 4, 12, 10),
               child: Row(children: [
                 Expanded(
                   child: TextField(
@@ -174,17 +214,17 @@ class _MentorPageState extends State<MentorPage> {
                       hintText: 'اكتب سؤالك للمرشد',
                       filled: true,
                       fillColor: kSurface,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: const BorderSide(color: kOutline)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: const BorderSide(color: kOutline)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide(color: kOutline)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide(color: kOutline)),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 IconButton.filled(
                   style: IconButton.styleFrom(backgroundColor: kForest),
                   onPressed: busy ? null : () => _send(ctrl.text),
-                  icon: const Icon(Icons.send),
+                  icon: Icon(Icons.send),
                 ),
               ]),
             ),

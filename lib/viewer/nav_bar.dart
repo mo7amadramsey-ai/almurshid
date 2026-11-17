@@ -19,9 +19,9 @@ class AppNavBar extends StatelessWidget {
         child: AnimatedBuilder(
           animation: recents,
           builder: (_, __) => recents.items.isEmpty
-              ? const Padding(padding: EdgeInsets.all(28), child: Text('لا توجد شاشات حديثة بعد.'))
+              ? Padding(padding: EdgeInsets.all(28), child: Text('لا توجد شاشات حديثة بعد.'))
               : ListView(shrinkWrap: true, children: [
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.fromLTRB(20, 16, 20, 6),
                     child: Text('الشاشات الأخيرة', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: kBrownDark)),
                   ),
@@ -30,7 +30,7 @@ class AppNavBar extends StatelessWidget {
                       dense: true,
                       leading: Icon(iconForUrl(r.url), color: kBrown),
                       title: Text(r.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      subtitle: Text(Uri.tryParse(r.url)?.host ?? '', style: const TextStyle(fontSize: 11)),
+                      subtitle: Text(Uri.tryParse(r.url)?.host ?? '', style: TextStyle(fontSize: 11)),
                       onTap: () {
                         Navigator.pop(sheet);
                         openItem(context, url: r.url, title: r.title);

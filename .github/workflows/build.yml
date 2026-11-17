@@ -15,12 +15,33 @@ jobs:
         with: { channel: stable }
       # Generate the Android scaffolding (existing files are kept)
       - run: flutter create --platforms=android --org com.mohammed --project-name almurshid .
+      # `flutter create` adds a sample test that does not belong to this project (and breaks analysis)
+      - run: rm -f test/widget_test.dart
       # Overlay our native code, manifest and resources
       - run: cp -r android_overlay/* android/
+      # flutter_secure_storage needs minSdk 23+: make sure the generated project is not lower
+      - name: Raise minSdk to 24
+        shell: bash
+        run: |
+          set -eo pipefail
+          sed -i -E 's/minSdk *= *flutter\.minSdkVersion/minSdk = 24/; s/minSdkVersion +flutter\.minSdkVersion/minSdkVersion 24/' android/app/build.gradle* || true
+          grep -n "minSdk" android/app/build.gradle* || true
       - run: flutter pub get
-      # Unit tests for the parser + crawler (pure Dart, no device needed)
+      # Static analysis: errors and warnings fail the build (info-level hints do not)
+      - name: Analyze
+        shell: bash
+        run: |
+          set -eo pipefail
+          flutter analyze --no-fatal-infos 2>&1 | tee analyze.log
+      # Formatting is reported only for now (does not fail the build)
+      - name: Format check (report only)
+        continue-on-error: true
+        run: dart format --output=none --set-exit-if-changed lib test
+      # Unit tests (pure Dart, no device needed)
       - name: Test
-        run: flutter test test/parser_test.dart test/crawler_test.dart test/planner_test.dart test/due_test.dart test/ai_test.dart test/chapters_test.dart test/alerts_test.dart test/viewer_test.dart 2>&1 | tee test.log
+        run: |
+          set -eo pipefail
+          flutter test test/parser_test.dart test/crawler_test.dart test/planner_test.dart test/due_test.dart test/ai_test.dart test/chapters_test.dart test/alerts_test.dart test/viewer_test.dart test/secrets_test.dart test/data_safety_test.dart 2>&1 | tee test.log
         shell: bash
       - name: Build APK
         run: flutter build apk --release --target-platform android-arm,android-arm64 --build-number=${{ github.run_number }} 2>&1 | tee build.log
@@ -49,9 +70,9 @@ jobs:
         if: failure()
         run: |
           mkdir /tmp/bl
-          touch test.log build.log
-          cat test.log build.log | grep -nE "Error|error:|FAILURE|What went wrong|lib/|test/|Expected|Actual|EXCEPTION|Some tests failed" | head -120 > /tmp/bl/errors.txt || true
-          { tail -n 80 test.log; echo ======; tail -n 80 build.log; } > /tmp/bl/tail.txt || true
+          touch test.log build.log analyze.log
+          cat analyze.log test.log build.log | grep -v "info •" | grep -nE "Error|error:|FAILURE|What went wrong|lib/|test/|Expected|Actual|EXCEPTION|Some tests failed" | head -120 > /tmp/bl/errors.txt || true
+          { tail -n 40 analyze.log | cut -c1-300; echo ======; tail -n 80 test.log; echo ======; tail -n 80 build.log; } > /tmp/bl/tail.txt || true
           git config user.name github-actions
           git config user.email actions@github.com
           git checkout --orphan buildlog
@@ -65,12 +86,15 @@ jobs:
           name: almurshid-apk
           path: build/app/outputs/flutter-apk/app-release.apk
       # Publish the APK as a GitHub Release (visible in the repo's "Releases" section)
+      # main -> normal release; any other branch -> pre-release (so a test build never becomes "latest")
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: المرشد الدراسي v1.0.${{ github.run_number }}
+          tag_name: ${{ github.ref == 'refs/heads/main' && format('v1.0.{0}', github.run_number) || format('dev-{0}', github.run_number) }}
+          name: المرشد الدراسي ${{ github.ref == 'refs/heads/main' && format('v1.0.{0}', github.run_number) || format('dev-{0} ({1})', github.run_number, github.ref_name) }}
           files: build/app/outputs/flutter-apk/app-release.apk
-          make_latest: true
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
+          make_latest: ${{ github.ref == 'refs/heads/main' }}
           body: |
+            Commit: `${{ github.sha }}`
             SHA-256: `${{ env.SHA }}`
             إذا فشل التثبيت (حزمة غير صالحة): أعد تنزيل الملف على واي فاي مستقر وقارن حجمه، واحذف أي نسخة قديمة من التطبيق أولاً.
