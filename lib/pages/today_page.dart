@@ -1,3 +1,4 @@
+import '../media/library_page.dart';
 import 'package:flutter/material.dart';
 import '../viewer/open_item.dart';
 import '../app_state.dart';
@@ -146,6 +147,14 @@ class TodayPage extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Expanded(child: _QuickAction(icon: Icons.event_note_outlined, label: 'الخطة', onTap: onPlan)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _QuickAction(
+            icon: Icons.video_library_outlined,
+            label: 'مكتبتي',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LibraryPage())),
+          ),
+        ),
       ]),
 
       // ---- today's checklist

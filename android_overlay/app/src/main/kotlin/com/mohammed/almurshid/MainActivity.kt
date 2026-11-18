@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.webkit.CookieManager
 import android.telecom.TelecomManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -101,6 +102,9 @@ class MainActivity : FlutterActivity() {
                 "isFocused" -> {
                     val multi = Build.VERSION.SDK_INT >= 24 && isInMultiWindowMode
                     result.success(hasWindowFocus() && !multi)
+                }
+                "getCookies" -> {
+                    result.success(CookieManager.getInstance().getCookie(call.argument<String>("url") ?: "") ?: "")
                 }
                 "notify" -> {
                     Notifier.show(this, (call.argument<Number>("id"))!!.toInt(), call.argument<String>("title") ?: "", call.argument<String>("body") ?: "")

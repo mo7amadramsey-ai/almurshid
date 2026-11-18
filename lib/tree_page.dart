@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'media/download_sheet.dart';
 import 'viewer/open_item.dart';
 import 'package:flutter/services.dart';
 import 'models.dart';
@@ -84,22 +85,22 @@ class TreePage extends StatelessWidget {
           leading: Icon(Icons.menu_book, color: kForest),
           title: Text(c.title, style: TextStyle(fontWeight: FontWeight.w700)),
           subtitle: Text('${c.sections.length} أقسام · $n عنصر'),
-          children: [for (final s in c.sections) _sectionTile(context, s)],
+          children: [for (final s in c.sections) _sectionTile(context, s, c.title)],
         ),
       ),
     );
   }
 
-  Widget _sectionTile(BuildContext context, Section s) => Theme(
+  Widget _sectionTile(BuildContext context, Section s, String course) => Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           tilePadding: EdgeInsetsDirectional.only(start: 22, end: 14),
           title: Text(s.title, style: TextStyle(fontSize: 14.5, color: kMoss, fontWeight: FontWeight.w700)),
-          children: [for (final i in s.items) _itemTile(context, i, 0)],
+          children: [for (final i in s.items) _itemTile(context, i, 0, course)],
         ),
       );
 
-  Widget _itemTile(BuildContext context, Item i, int depth) {
+  Widget _itemTile(BuildContext context, Item i, int depth, String course) {
     final pad = EdgeInsetsDirectional.only(start: 34.0 + depth * 18, end: 12);
     final leading = Icon(kindIcon(i.kind), size: 22, color: kForest);
     if (i.children.isEmpty) {
@@ -110,7 +111,7 @@ class TreePage extends StatelessWidget {
         title: Text(i.title, style: TextStyle(fontSize: 14)),
         subtitle: Text(kindLabels[i.kind]!, style: TextStyle(fontSize: 11.5)),
         onTap: () => openItem(context, url: i.url, title: i.title, kind: i.kind),
-        onLongPress: () => _copy(context, i.url, 'تم نسخ الرابط'),
+        onLongPress: () => showItemActions(context, url: i.url, title: i.title, course: course),
       );
     }
     return Theme(
@@ -120,7 +121,7 @@ class TreePage extends StatelessWidget {
         leading: leading,
         title: Text(i.title, style: TextStyle(fontSize: 14)),
         subtitle: Text('${kindLabels[i.kind]} · ${i.children.length}', style: TextStyle(fontSize: 11.5)),
-        children: [for (final k in i.children) _itemTile(context, k, depth + 1)],
+        children: [for (final k in i.children) _itemTile(context, k, depth + 1, course)],
       ),
     );
   }

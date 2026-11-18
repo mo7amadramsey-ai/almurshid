@@ -1,3 +1,4 @@
+import '../media/download_sheet.dart';
 import 'package:flutter/material.dart';
 import '../viewer/open_item.dart';
 import '../ai.dart';
@@ -168,6 +169,7 @@ class _CoursePageState extends State<CoursePage> {
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   onTap: () => openItem(context, url: t.item.url, title: t.title, kind: t.kind),
+                  onLongPress: () => showItemActions(context, url: t.item.url, title: t.title, course: course.title),
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(4, 4, 10, 4),
                     child: Row(children: [
