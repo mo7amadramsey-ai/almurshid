@@ -23,7 +23,7 @@ StudyData dataWith({double hours = 4, DateTime? deadline}) {
 
 void main() {
   test('a day never holds more study than the allowed window', () {
-    final t = tree([course('1', [item('A', 'https://x/a', ItemKind.pdf)])]);
+    final t = tree([course('1', [item('A', 'https://x/a', ItemKind.book)])]);
     final data = dataWith(hours: 8);
     data.settings.windowStart = 9 * 60;
     data.settings.windowEnd = 11 * 60; // 2 hours only
@@ -35,7 +35,7 @@ void main() {
     final t = tree([
       course('1', [
         item('Intro 50 min', 'https://x/v1', ItemKind.video),
-        item('Slides', 'https://x/p1', ItemKind.pdf),
+        item('Reading', 'https://x/p1', ItemKind.book),
         item('Forum', 'https://x/f', ItemKind.forum),
         item('Folder', 'https://x/d', ItemKind.folder),
       ]),
@@ -46,12 +46,12 @@ void main() {
     // 50 min x 1.5 (video) x 1.15 (difficulty 3) = 86.25 -> 85
     expect(tasks.firstWhere((e) => e.kind == ItemKind.video).minutes, 85);
     // 30 min x 1.15 = 34.5 -> 35
-    expect(tasks.firstWhere((e) => e.kind == ItemKind.pdf).minutes, 35);
+    expect(tasks.firstWhere((e) => e.kind == ItemKind.book).minutes, 35);
   });
 
   test('the user-typed minutes win over every estimate', () {
     final t = tree([
-      course('1', [item('Slides', 'https://x/p1', ItemKind.pdf)])
+      course('1', [item('Slides', 'https://x/p1', ItemKind.book)])
     ]);
     final data = dataWith();
     data.state('1|https://x/p1').minutes = 120;
@@ -61,7 +61,7 @@ void main() {
 
   test('plenty of time: feasible, nothing left over, work starts today', () {
     final t = tree([
-      course('1', [item('A', 'https://x/a', ItemKind.pdf), item('B', 'https://x/b', ItemKind.pdf)])
+      course('1', [item('A', 'https://x/a', ItemKind.book), item('B', 'https://x/b', ItemKind.book)])
     ]);
     final data = dataWith(hours: 4);
     data.cfg('1').exam = DateTime(2026, 11, 25);
@@ -85,8 +85,8 @@ void main() {
 
   test('the course with the closer exam gets more of today', () {
     final t = tree([
-      course('A', [item('A1', 'https://x/a1', ItemKind.pdf)]),
-      course('B', [item('B1', 'https://x/b1', ItemKind.pdf)]),
+      course('A', [item('A1', 'https://x/a1', ItemKind.book)]),
+      course('B', [item('B1', 'https://x/b1', ItemKind.book)]),
     ]);
     final data = dataWith(hours: 4);
     data.state('A|https://x/a1').minutes = 200;
@@ -101,7 +101,7 @@ void main() {
 
   test('finished items leave the plan and raise progress', () {
     final t = tree([
-      course('1', [item('A', 'https://x/a', ItemKind.pdf), item('B', 'https://x/b', ItemKind.pdf)])
+      course('1', [item('A', 'https://x/a', ItemKind.book), item('B', 'https://x/b', ItemKind.book)])
     ]);
     final data = dataWith();
     data.state('1|https://x/a').done = true;
@@ -114,10 +114,10 @@ void main() {
 
   test('computeNews lists only items that were not there before', () {
     final before = tree([
-      course('1', [item('Old', 'https://x/old', ItemKind.pdf)])
+      course('1', [item('Old', 'https://x/old', ItemKind.book)])
     ]);
     final after = tree([
-      course('1', [item('Old', 'https://x/old', ItemKind.pdf), item('New', 'https://x/new', ItemKind.video)])
+      course('1', [item('Old', 'https://x/old', ItemKind.book), item('New', 'https://x/new', ItemKind.video)])
     ]);
     expect(computeNews(null, after).first, true);
     final n = computeNews(before, after);
@@ -142,5 +142,46 @@ void main() {
     expect(studyUntil('X', data.courses, data.settings), DateTime(2026, 12, 2));
     data.cfg('B').exam = DateTime(2026, 12, 5);
     expect(studyUntil('B', data.courses, data.settings), DateTime(2026, 12, 4));
+  });
+
+  test('PDFs, documents and files are supporting material: no task, no study time', () {
+    final t = tree([
+      course('1', [
+        item('Lec', 'https://x/v', ItemKind.video),
+        item('Slides', 'https://x/p', ItemKind.pdf),
+        item('Notes', 'https://x/d', ItemKind.document),
+        item('Data', 'https://x/f', ItemKind.file),
+      ]),
+    ]);
+    final tasks = buildTasks(t, dataWith());
+    expect(tasks.map((e) => e.kind).toList(), [ItemKind.video]);
+  });
+
+  Plan twoCourses(void Function(StudyData) setup) {
+    final t = tree([
+      course('A', [item('A1', 'https://x/a1', ItemKind.video)]),
+      course('B', [item('B1', 'https://x/b1', ItemKind.video)]),
+    ]);
+    final data = dataWith(hours: 4);
+    data.state('A|https://x/a1').minutes = 400;
+    data.state('B|https://x/b1').minutes = 400;
+    data.cfg('A').exam = DateTime(2026, 12, 5);
+    data.cfg('B').exam = DateTime(2026, 12, 5);
+    setup(data);
+    return buildPlan(tasks: buildTasks(t, data), cfg: data.courses, settings: data.settings, now: now);
+  }
+
+  int todayMinutes(Plan plan, String id) =>
+      plan.today!.slots.where((s) => s.task.courseId == id).fold(0, (a, s) => a + s.minutes);
+
+  test('a focus course takes most of the day while the others keep moving', () {
+    final plan = twoCourses((d) => d.settings.focusCourse = 'A');
+    expect(todayMinutes(plan, 'A') > todayMinutes(plan, 'B') * 2, true);
+    expect(todayMinutes(plan, 'B') > 0, true);
+  });
+
+  test('the course order set by the user shapes the shares', () {
+    final plan = twoCourses((d) => d.settings.courseOrder = ['B', 'A']);
+    expect(todayMinutes(plan, 'B') > todayMinutes(plan, 'A'), true);
   });
 }

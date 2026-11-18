@@ -58,8 +58,11 @@ String _fmt(Duration d) {
 }
 
 class VideoFilePage extends StatefulWidget {
-  final String path;
-  const VideoFilePage({super.key, required this.path});
+  final String path; // file path, or a stable key ("yt:ID") when streaming
+  final String? streamUrl;
+  final Map<String, String>? headers;
+  final String? title;
+  const VideoFilePage({super.key, required this.path, this.streamUrl, this.headers, this.title});
   @override
   State<VideoFilePage> createState() => _VideoFilePageState();
 }
@@ -77,7 +80,10 @@ class _VideoFilePageState extends State<VideoFilePage> {
   void initState() {
     super.initState();
     WakelockPlus.enable();
-    v = VideoPlayerController.file(File(widget.path));
+    final su = widget.streamUrl;
+    v = su == null
+        ? VideoPlayerController.file(File(widget.path))
+        : VideoPlayerController.networkUrl(Uri.parse(su), httpHeaders: widget.headers ?? const {});
     _init();
   }
 
@@ -136,7 +142,7 @@ class _VideoFilePageState extends State<VideoFilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final title = titlePart(baseName(widget.path));
+    final title = widget.title ?? titlePart(baseName(widget.path));
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(

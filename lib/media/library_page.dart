@@ -4,6 +4,8 @@ import '../theme.dart';
 import '../widgets.dart';
 import 'downloads_page.dart';
 import 'files.dart';
+import 'gallery.dart';
+import 'numbering.dart';
 import 'viewers.dart';
 
 /// Folder browser for everything downloaded (one folder per course by default).
@@ -63,6 +65,14 @@ class _LibraryPageState extends State<LibraryPage> {
   Future<void> _rename(FileSystemEntity e) async {
     final isFile = e is File;
     final cur = baseName(e.path);
+    if (e is File && !cur.startsWith('.')) {
+      // files: name + number together (the Focus Lock way); a taken number shifts the following ones
+      final r = await askNameNumber(context, title: 'الاسم والرقم', initialName: titlePart(cur), initialNumber: numberOf(cur));
+      if (r == null) return;
+      await applyNameNumber(e, r.name, r.number);
+      _load();
+      return;
+    }
     final n = await _ask('الاسم الجديد', initial: isFile ? titlePart(cur) : cur);
     if (n == null) return;
     final ext = isFile && extOf(cur).isNotEmpty ? '.${extOf(cur)}' : '';
@@ -89,6 +99,7 @@ class _LibraryPageState extends State<LibraryPage> {
       ),
     );
     if (ok != true) return;
+    await galleryRemoved(e.path, folder: e is Directory);
     await e.delete(recursive: true);
     _load();
   }
@@ -118,6 +129,7 @@ class _LibraryPageState extends State<LibraryPage> {
       return;
     }
     await f.rename(target);
+    await galleryMoved(f.path, target);
     _load();
   }
 

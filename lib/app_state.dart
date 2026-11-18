@@ -38,6 +38,14 @@ class AppState extends ChangeNotifier {
     for (final c in t.courses) {
       data.cfg(c.id);
     }
+    // keep the user's course order complete: new courses go last, vanished ones are dropped
+    final ids = t.courses.map((c) => c.id).toList();
+    final order = data.settings.courseOrder;
+    order.removeWhere((id) => !ids.contains(id));
+    for (final id in ids) {
+      if (!order.contains(id)) order.add(id);
+    }
+    if (data.settings.focusCourse != null && !ids.contains(data.settings.focusCourse)) data.settings.focusCourse = null;
     tasks = buildTasks(t, data);
     plan = buildPlan(tasks: tasks, cfg: data.courses, settings: data.settings);
   }
@@ -85,6 +93,34 @@ class AppState extends ChangeNotifier {
     final st = data.state(t.id);
     st.done = !st.done;
     st.doneAt = st.done ? DateTime.now() : null;
+    await commit();
+  }
+
+  /// Courses in the order the user ranked them (first = most important)
+  List<Course> get orderedCourses {
+    final cs = [...?tree?.courses];
+    final order = data.settings.courseOrder;
+    cs.sort((a, b) {
+      final x = order.indexOf(a.id), y = order.indexOf(b.id);
+      return (x < 0 ? 1 << 20 : x).compareTo(y < 0 ? 1 << 20 : y);
+    });
+    return cs;
+  }
+
+  Future<void> moveCourse(int from, int to) async {
+    final list = orderedCourses.map((c) => c.id).toList();
+    if (to > from) to -= 1;
+    final id = list.removeAt(from);
+    list.insert(to, id);
+    data.settings.courseOrder
+      ..clear()
+      ..addAll(list);
+    await commit();
+  }
+
+  /// Focus on one course: it gets the lion's share of every day (null clears the focus)
+  Future<void> setFocus(String? courseId) async {
+    data.settings.focusCourse = courseId;
     await commit();
   }
 

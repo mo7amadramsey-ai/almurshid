@@ -35,4 +35,11 @@ void main() {
     expect(qualityRank('360p'), 360);
     expect(qualityRank('audio'), 0);
   });
+
+  test('making room for a number shifts only the run that follows it', () {
+    final names = ['001 - A.mp4', '002 - B.mp4', '003 - C.mp4', '005 - E.mp4', 'Notes.pdf'];
+    expect(shiftPlan(names, 2), [('003 - C.mp4', '004 - C.mp4'), ('002 - B.mp4', '003 - B.mp4')]);
+    expect(shiftPlan(names, 4), isEmpty);
+    expect(shiftPlan(names, 5), [('005 - E.mp4', '006 - E.mp4')]);
+  });
 }

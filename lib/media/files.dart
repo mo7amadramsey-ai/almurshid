@@ -101,3 +101,28 @@ String fmtSize(int bytes) {
   if (bytes >= 1048576) return '${(bytes / 1048576).toStringAsFixed(1)} MB';
   return '${(bytes / 1024).toStringAsFixed(0)} KB';
 }
+
+/// Pure plan for "make room for number [n]": the file that already has it, and the ones right after it
+/// with no gap, each move up by ONE. 001 002 003 004 + new 001 -> old become 002 003 004 005.
+/// Returns (old name, new name) pairs, highest number first so a name is never taken twice.
+List<(String, String)> shiftPlan(Iterable<String> names, int n) {
+  final byNum = <int, List<String>>{};
+  for (final name in names) {
+    final k = numberOf(name);
+    if (k != null) byNum.putIfAbsent(k, () => []).add(name);
+  }
+  if (!byNum.containsKey(n)) return const [];
+  var end = n;
+  while (byNum.containsKey(end + 1)) {
+    end++;
+  }
+  final out = <(String, String)>[];
+  for (var k = end; k >= n; k--) {
+    for (final name in byNum[k]!) {
+      final ext = extOf(name).isEmpty ? '' : '.${extOf(name)}';
+      out.add((name, numberedName(k + 1, titlePart(name), ext)));
+    }
+  }
+  return out;
+}
+

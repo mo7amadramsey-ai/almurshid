@@ -71,6 +71,9 @@ class Settings {
   String provider; // id from aiProviders
   String baseUrl; // empty = provider default
   String themeMode; // system | light | dark
+  bool saveToGallery; // downloaded videos are also copied to the phone's gallery
+  String? focusCourse; // course id the user wants to concentrate on (null = none)
+  List<String> courseOrder; // course ids in the order the user ranked them (first = most important)
   Settings({
     DateTime? deadline,
     List<double>? hours,
@@ -84,7 +87,11 @@ class Settings {
     this.provider = 'gemini',
     this.baseUrl = '',
     this.themeMode = 'system',
-  })  : deadline = deadline ?? DateTime(2026, 12, 2),
+    this.focusCourse,
+    this.saveToGallery = true,
+    List<String>? courseOrder,
+  })  : courseOrder = courseOrder ?? [],
+        deadline = deadline ?? DateTime(2026, 12, 2),
         hours = hours ?? List<double>.filled(7, 4.0);
 
   /// Length of the allowed study window in minutes (0 when it is invalid)
@@ -118,6 +125,9 @@ class Settings {
         'provider': provider,
         'baseUrl': baseUrl,
         'themeMode': themeMode,
+        if (focusCourse != null) 'focusCourse': focusCourse,
+        'saveToGallery': saveToGallery,
+        'courseOrder': courseOrder,
       };
 
   factory Settings.fromJson(Map<String, dynamic> j) {
@@ -136,6 +146,9 @@ class Settings {
       provider: (j['provider'] as String?) ?? 'anthropic',
       baseUrl: (j['baseUrl'] as String?) ?? '',
       themeMode: (j['themeMode'] as String?) ?? 'system',
+      focusCourse: j['focusCourse'] as String?,
+      courseOrder: ((j['courseOrder'] as List?) ?? []).map((e) => e as String).toList(),
+      saveToGallery: (j['saveToGallery'] as bool?) ?? true,
     );
     st.keyInFile = legacyKey.isNotEmpty;
     return st;

@@ -7,6 +7,7 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import '../channel.dart';
 import '../crawler/classify.dart' show isMoodleHost;
 import 'files.dart';
+import 'gallery.dart';
 
 enum DlState { preparing, running, done, failed, cancelled }
 
@@ -19,12 +20,16 @@ class DlTask {
   final String? quality; // YouTube quality label to fetch (null = direct file)
   final bool audio;
   final int? number;
+  final bool isYoutube; // retried through the YouTube runner
+  final int? maxHeight; // automatic quality: best up to this height (null = best available)
+  final bool gallery; // also copy the finished file to the phone's gallery
+  final String? galleryFolder;
   DlState state = DlState.preparing;
   int got = 0, total = 0;
   String? error;
   String? resultPath;
   bool cancelRequested = false;
-  DlTask(this.id, this.url, this.dir, this.title, this.label, {this.quality, this.audio = false, this.number});
+  DlTask(this.id, this.url, this.dir, this.title, this.label, {this.quality, this.audio = false, this.number, this.isYoutube = false, this.maxHeight, this.gallery = false, this.galleryFolder});
 
   bool get active => state == DlState.preparing || state == DlState.running;
   double? get progress => total > 0 ? (got / total).clamp(0.0, 1.0).toDouble() : null;
@@ -100,20 +105,33 @@ class DownloadManager extends ChangeNotifier {
       t.active && t.url == url && t.dir.path == dir.path && t.quality == quality && t.audio == audio);
 
   /// false when the same download is already running
-  bool startYoutube(String url, Directory dir, {required String title, required YtOption option, int? number}) {
+  bool startYoutube(String url, Directory dir,
+      {required String title, required YtOption option, int? number, bool gallery = false, String? galleryFolder}) {
     final q = option.audio ? null : option.label;
     if (_dup(url, dir, q, option.audio)) return false;
     final t = DlTask(_next++, url, dir, title, option.audio ? 'صوت فقط' : option.label,
-        quality: q, audio: option.audio, number: number);
+        quality: q, audio: option.audio, number: number, isYoutube: true, gallery: gallery, galleryFolder: galleryFolder);
     tasks.insert(0, t);
     notifyListeners();
     _runYoutube(t);
     return true;
   }
 
-  bool startFile(String url, Directory dir, {required String title, int? number}) {
+  /// Automatic quality (used by "download the whole course"): the best quality up to [maxHeight].
+  bool startYoutubeAuto(String url, Directory dir,
+      {required String title, int? maxHeight, int? number, bool gallery = false, String? galleryFolder}) {
     if (_dup(url, dir, null, false)) return false;
-    final t = DlTask(_next++, url, dir, title, 'ملف', number: number);
+    final t = DlTask(_next++, url, dir, title, maxHeight == null ? 'أعلى جودة' : 'حتى ${maxHeight}p',
+        number: number, isYoutube: true, maxHeight: maxHeight, gallery: gallery, galleryFolder: galleryFolder);
+    tasks.insert(0, t);
+    notifyListeners();
+    _runYoutube(t);
+    return true;
+  }
+
+  bool startFile(String url, Directory dir, {required String title, int? number, bool gallery = false, String? galleryFolder}) {
+    if (_dup(url, dir, null, false)) return false;
+    final t = DlTask(_next++, url, dir, title, 'ملف', number: number, gallery: gallery, galleryFolder: galleryFolder);
     tasks.insert(0, t);
     notifyListeners();
     _runFile(t);
@@ -126,15 +144,22 @@ class DownloadManager extends ChangeNotifier {
 
   void retry(DlTask t) {
     tasks.remove(t);
-    if (t.quality != null || t.audio) {
+    if (t.isYoutube || t.quality != null || t.audio) {
       _retryYoutube(t);
     } else {
-      startFile(t.url, t.dir, title: t.title, number: t.number);
+      startFile(t.url, t.dir, title: t.title, number: t.number, gallery: t.gallery, galleryFolder: t.galleryFolder);
     }
   }
 
   void _retryYoutube(DlTask t) {
-    final nt = DlTask(_next++, t.url, t.dir, t.title, t.label, quality: t.quality, audio: t.audio, number: t.number);
+    final nt = DlTask(_next++, t.url, t.dir, t.title, t.label,
+        quality: t.quality,
+        audio: t.audio,
+        number: t.number,
+        isYoutube: true,
+        maxHeight: t.maxHeight,
+        gallery: t.gallery,
+        galleryFolder: t.galleryFolder);
     tasks.insert(0, nt);
     notifyListeners();
     _runYoutube(nt);
@@ -175,7 +200,18 @@ class DownloadManager extends ChangeNotifier {
         info = a;
         ext = a.container.name == 'mp4' ? '.m4a' : '.${a.container.name}';
       } else {
-        final cands = m.muxed.where((s) => s.videoQualityLabel == t.quality).toList();
+        final List<MuxedStreamInfo> cands;
+        if (t.quality == null) {
+          // automatic: the best quality that does not exceed maxHeight (or the lowest one if all are higher)
+          final all = m.muxed.toList()..sort((a, b) => qualityRank(b.videoQualityLabel).compareTo(qualityRank(a.videoQualityLabel)));
+          if (all.isEmpty) throw Exception('لا توجد جودات متاحة');
+          final fit = all.where((s) => t.maxHeight == null || qualityRank(s.videoQualityLabel) <= t.maxHeight!).toList();
+          final pool = fit.isNotEmpty ? fit : [all.last];
+          final top = qualityRank(pool.first.videoQualityLabel);
+          cands = pool.where((s) => qualityRank(s.videoQualityLabel) == top).toList();
+        } else {
+          cands = m.muxed.where((s) => s.videoQualityLabel == t.quality).toList();
+        }
         if (cands.isEmpty) throw Exception('الجودة ${t.quality} لم تعد متاحة');
         cands.sort((a, b) => b.bitrate.bitsPerSecond.compareTo(a.bitrate.bitsPerSecond));
         info = cands.first;
@@ -202,6 +238,7 @@ class DownloadManager extends ChangeNotifier {
       final target = _finalTarget(t, t.title, ext);
       await part.rename(target.path);
       t.resultPath = target.path;
+      if (t.gallery) await galleryExport(target, folder: t.galleryFolder ?? 'المرشد');
       t.state = DlState.done;
     } on _Cancelled {
       t.state = DlState.cancelled;
@@ -276,6 +313,7 @@ class DownloadManager extends ChangeNotifier {
       final target = _finalTarget(t, t.title, ext.isEmpty ? '' : '.$ext');
       await part.rename(target.path);
       t.resultPath = target.path;
+      if (t.gallery) await galleryExport(target, folder: t.galleryFolder ?? 'المرشد');
       t.state = DlState.done;
     } on _Cancelled {
       t.state = DlState.cancelled;

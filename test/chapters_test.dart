@@ -61,7 +61,7 @@ void main() {
     expect(g.map((e) => e.label), containsAll(['Week 1', 'Week 2']));
   });
 
-  test('inside a chapter videos come before files and assignments', () {
+  test('inside a chapter videos come first, then assignments; PDFs are not tasks', () {
     final c = course([
       Section(title: 'General', items: [
         Item(title: 'Chapter 1 hw', url: 'https://x/h', kind: ItemKind.assignment),
@@ -71,6 +71,6 @@ void main() {
     ]);
     final d = StudyData();
     final g = groupChapters(buildTasks(tree([c], DateTime(2026, 11, 1)), d), d.items);
-    expect(g.single.tasks.map((t) => t.kind).toList(), [ItemKind.video, ItemKind.pdf, ItemKind.assignment]);
+    expect(g.single.tasks.map((t) => t.kind).toList(), [ItemKind.video, ItemKind.assignment]);
   });
 }

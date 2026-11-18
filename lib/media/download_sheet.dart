@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../app_state.dart';
 import '../theme.dart';
 import '../viewer/youtube_page.dart' show youtubeIdOf;
 import '../widgets.dart';
 import 'downloads.dart';
 import 'downloads_page.dart';
 import 'files.dart';
+import 'numbering.dart';
 
 /// Long-press menu for any course item: download, copy link
 Future<void> showItemActions(BuildContext c, {required String url, required String title, String? course}) async {
@@ -47,7 +49,17 @@ Future<void> showDownloadSheet(BuildContext c, {required String url, required St
   final dir = await courseDir(course);
   if (!c.mounted) return;
   if (youtubeIdOf(u) == null) {
-    final ok = downloads.startFile(url, dir, title: title);
+    var fileName = title;
+    int? number;
+    final isVid = isVideoLink(url);
+    if (isVid) {
+      final r = await askNameNumber(c, title: 'اسم الفيديو ورقمه', initialName: title, initialNumber: defaultNumber(dir, course, url));
+      if (r == null || !c.mounted) return;
+      fileName = r.name.isEmpty ? title : r.name;
+      number = r.number;
+    }
+    final ok = downloads.startFile(url, dir,
+        title: fileName, number: number, gallery: isVid && app.settings.saveToGallery, galleryFolder: course);
     toast(c, ok ? 'بدأ التحميل — تابعه من زر التنزيلات' : 'هذا الملف قيد التحميل بالفعل');
     return;
   }
@@ -87,9 +99,18 @@ Future<void> showDownloadSheet(BuildContext c, {required String url, required St
             leading: Icon(o.audio ? Icons.audiotrack_outlined : Icons.videocam_outlined, color: kMoss),
             title: Text(o.text),
             subtitle: Text(fmtSize(o.bytes)),
-            onTap: () {
+            onTap: () async {
               Navigator.pop(sheet);
-              final ok = downloads.startYoutube(url, dir, title: name, option: o);
+              // like Focus Lock: ask for a name and number; the default number follows the lecture order
+              final r = await askNameNumber(c,
+                  title: 'اسم الفيديو ورقمه', initialName: name, initialNumber: o.audio ? null : defaultNumber(dir, course, url));
+              if (r == null || !c.mounted) return;
+              final ok = downloads.startYoutube(url, dir,
+                  title: r.name.isEmpty ? name : r.name,
+                  option: o,
+                  number: r.number,
+                  gallery: !o.audio && app.settings.saveToGallery,
+                  galleryFolder: course);
               toast(c, ok ? 'بدأ التحميل (${o.text})' : 'هذه الجودة قيد التحميل بالفعل');
             },
           ),

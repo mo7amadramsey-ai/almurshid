@@ -11,11 +11,10 @@
 import 'models.dart';
 import 'study_models.dart';
 
+// Videos are the heart of the plan. PDFs, documents and plain files are supporting material:
+// they are never scheduled and take no study time (they stay reachable from the course page).
 const _studyKinds = {
   ItemKind.video,
-  ItemKind.pdf,
-  ItemKind.document,
-  ItemKind.file,
   ItemKind.page,
   ItemKind.book,
   ItemKind.assignment,
@@ -38,12 +37,6 @@ int baseMinutes(ItemKind k) {
   switch (k) {
     case ItemKind.video:
       return 40;
-    case ItemKind.pdf:
-      return 30;
-    case ItemKind.document:
-      return 25;
-    case ItemKind.file:
-      return 15;
     case ItemKind.page:
       return 15;
     case ItemKind.book:
@@ -241,6 +234,16 @@ Plan buildPlan({
     regIdx[cid] = (u - s.bufferDays) >= 0 ? u - s.bufferDays : u;
   }
   int prio(String cid) => cfg[cid]?.priority ?? 2;
+  // The course order chosen by the user matters: the first course gets up to 1.5x the share of the last.
+  // A focus course takes the lion's share of every day (the others still keep moving, just slower).
+  final order = s.courseOrder;
+  double boost(String cid) {
+    var b = 1.0;
+    final pos = order.indexOf(cid);
+    if (pos >= 0 && order.length > 1) b += 0.5 * (1 - pos / (order.length - 1));
+    if (s.focusCourse == cid) b *= 4.0;
+    return b;
+  }
   int courseRem(String cid) => byCourse[cid]!.fold(0, (a, t) => a + (rem[t.id] ?? 0));
 
   int place(DayPlan day, Task t, int want) {
@@ -284,7 +287,7 @@ Plan buildPlan({
       for (var k = i; k <= regIdx[cid]! && k < days.length; k++) {
         if (days[k].capacity >= 5) capDays++;
       }
-      weight[cid] = prio(cid) * r / (capDays < 1 ? 1 : capDays);
+      weight[cid] = prio(cid) * boost(cid) * r / (capDays < 1 ? 1 : capDays);
     }
     if (weight.isEmpty) continue;
     final totalW = weight.values.fold<double>(0, (a, b) => a + b);

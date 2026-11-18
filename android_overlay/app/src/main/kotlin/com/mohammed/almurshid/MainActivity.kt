@@ -3,7 +3,11 @@ package com.mohammed.almurshid
 import android.app.admin.DeviceAdminReceiver
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
+import android.content.ContentValues
 import android.content.Intent
+import android.net.Uri
+import android.os.Environment
+import android.provider.MediaStore
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
@@ -129,6 +133,28 @@ class MainActivity : FlutterActivity() {
                 "isDeviceOwner" -> {
                     result.success(getSystemService(DevicePolicyManager::class.java).isDeviceOwnerApp(packageName))
                 }
+                // Copies a finished download into the phone's gallery (Movies/المرشد/<folder>); returns its Uri
+                "saveToGallery" -> {
+                    val path = call.argument<String>("path")!!
+                    val name = call.argument<String>("name")!!
+                    val folder = call.argument<String>("folder") ?: "المرشد"
+                    Thread {
+                        val uri = try { saveToGallery(path, name, folder) } catch (e: Exception) { null }
+                        runOnUiThread { result.success(uri) }
+                    }.start()
+                }
+                // Keeps the gallery copy in step with renames / deletes done in the app (the app owns these items)
+                "galleryRename" -> {
+                    val ok = try {
+                        val cv = ContentValues().apply { put(MediaStore.MediaColumns.DISPLAY_NAME, call.argument<String>("name")!!) }
+                        contentResolver.update(Uri.parse(call.argument<String>("uri")!!), cv, null, null) > 0
+                    } catch (e: Exception) { false }
+                    result.success(ok)
+                }
+                "galleryDelete" -> {
+                    val ok = try { contentResolver.delete(Uri.parse(call.argument<String>("uri")!!), null, null) > 0 } catch (e: Exception) { false }
+                    result.success(ok)
+                }
                 else -> result.notImplemented()
             }
         }
@@ -168,6 +194,40 @@ class MainActivity : FlutterActivity() {
         floatHandler.removeCallbacks(floatCheck)
         watching = false
         super.onDestroy()
+    }
+
+    // MediaStore insert (Android 10+, no storage permission). null = not possible / not a media file.
+    private fun saveToGallery(path: String, name: String, folder: String): String? {
+        if (Build.VERSION.SDK_INT < 29) return null
+        val src = java.io.File(path)
+        if (!src.exists()) return null
+        val ext = name.substringAfterLast('.', "").lowercase()
+        val video = mapOf("mp4" to "video/mp4", "m4v" to "video/mp4", "webm" to "video/webm", "mkv" to "video/x-matroska",
+            "mov" to "video/quicktime", "3gp" to "video/3gpp")
+        val audio = mapOf("m4a" to "audio/mp4", "mp3" to "audio/mpeg", "aac" to "audio/aac", "ogg" to "audio/ogg",
+            "opus" to "audio/ogg", "wav" to "audio/wav")
+        val isAudio = audio.containsKey(ext)
+        val mime = video[ext] ?: audio[ext] ?: return null
+        val collection = if (isAudio) MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                         else MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        val base = if (isAudio) Environment.DIRECTORY_MUSIC else Environment.DIRECTORY_MOVIES
+        val cv = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.MIME_TYPE, mime)
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "$base/المرشد/$folder")
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
+        }
+        val uri = contentResolver.insert(collection, cv) ?: return null
+        try {
+            contentResolver.openOutputStream(uri)?.use { out -> src.inputStream().use { it.copyTo(out) } }
+                ?: throw java.io.IOException("no stream")
+            val done = ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) }
+            contentResolver.update(uri, done, null, null)
+        } catch (e: Exception) {
+            try { contentResolver.delete(uri, null, null) } catch (_: Exception) {}
+            return null
+        }
+        return uri.toString()
     }
 
     private fun enforceLock() {

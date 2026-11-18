@@ -1,4 +1,6 @@
+import '../media/course_download.dart';
 import '../media/download_sheet.dart';
+import '../media/support_files.dart';
 import 'package:flutter/material.dart';
 import '../viewer/open_item.dart';
 import '../ai.dart';
@@ -20,16 +22,30 @@ class CoursesPage extends StatelessWidget {
           return EmptyNote(icon: Icons.menu_book_outlined, title: 'لا مواد بعد', body: 'استورد موادك من مودل أولاً.');
         }
         final now = dOnly(DateTime.now());
-        return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 28), children: [
-          for (final course in t.courses) _CourseCard(course: course, now: now),
-        ]);
+        final courses = app.orderedCourses;
+        // Long-press the handle and drag: the order you set here shapes the study plan (first = most important)
+        return ReorderableListView(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
+          buildDefaultDragHandles: false,
+          onReorder: app.moveCourse,
+          header: Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+            child: Text('رتّب موادك بالسحب: الأعلى أهم وتأخذ وقتاً أكبر في الخطة.', style: TextStyle(fontSize: 12.5, color: kInk.withValues(alpha: 0.65))),
+          ),
+          children: [
+            for (var i = 0; i < courses.length; i++)
+              _CourseCard(key: ValueKey(courses[i].id), course: courses[i], now: now, rank: i + 1, index: i),
+          ],
+        );
       });
 }
 
 class _CourseCard extends StatelessWidget {
   final Course course;
   final DateTime now;
-  const _CourseCard({required this.course, required this.now});
+  final int rank;
+  final int index;
+  const _CourseCard({super.key, required this.course, required this.now, required this.rank, required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +67,8 @@ class _CourseCard extends StatelessWidget {
             child: Row(children: [
               ProgressRing(
                 value: p,
-                size: 66,
-                child: Text('${(p * 100).round()}%', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                size: 62,
+                child: Text('$rank', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -60,8 +76,8 @@ class _CourseCard extends StatelessWidget {
                   Text(course.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, height: 1.35)),
                   const SizedBox(height: 8),
                   Wrap(spacing: 8, runSpacing: 6, children: [
-                    Pill('متبقٍ ${fmtMin(app.remainingMin(course.id))}', icon: Icons.timelapse),
-                    Pill('صعوبة ${cfg.difficulty}/5', icon: Icons.speed),
+                    if (app.settings.focusCourse == course.id) Pill('تركيز', icon: Icons.center_focus_strong, bg: kForest, fg: Colors.white),
+                    Pill('${(p * 100).round()}%  ·  متبقٍ ${fmtMin(app.remainingMin(course.id))}', icon: Icons.timelapse),
                     exam == null
                         ? Pill('بلا موعد امتحان', icon: Icons.event_busy, bg: kWarnBg, fg: kWarnText)
                         : Pill('امتحان ${fmtDm(exam)}  ·  ${left! < 0 ? 'فات' : 'بعد $left يوم'}',
@@ -69,7 +85,10 @@ class _CourseCard extends StatelessWidget {
                   ]),
                 ]),
               ),
-              Icon(Icons.chevron_left, color: kInk.withValues(alpha: 0.4)),
+              ReorderableDragStartListener(
+                index: index,
+                child: Padding(padding: const EdgeInsets.all(6), child: Icon(Icons.drag_indicator, color: kInk.withValues(alpha: 0.4))),
+              ),
             ]),
           ),
         ),
@@ -203,7 +222,16 @@ class _CoursePageState extends State<CoursePage> {
           }
         }
         return Scaffold(
-          appBar: AppBar(title: Text(course.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
+          appBar: AppBar(
+            title: Text(course.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+            actions: [
+              IconButton(
+                tooltip: 'تحميل كل فيديوهات المادة',
+                icon: const Icon(Icons.download_for_offline_outlined),
+                onPressed: () => showCourseDownload(context, course),
+              ),
+            ],
+          ),
           body: ListView(padding: EdgeInsets.fromLTRB(16, 0, 16, 28), children: [
             Panel(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -224,7 +252,15 @@ class _CoursePageState extends State<CoursePage> {
                     },
                   ),
                 ),
-                SizedBox(height: 14),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: app.settings.focusCourse == course.id,
+                  activeColor: kForest,
+                  title: Text('ركّز على هذه المادة', style: TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: Text('تأخذ معظم وقت كل يوم، وبقية المواد تتقدم ببطء.'),
+                  onChanged: (v) => app.setFocus(v ? course.id : null),
+                ),
+                SizedBox(height: 8),
                 Text('الصعوبة: ${cfg.difficulty}/5', style: TextStyle(fontWeight: FontWeight.w700)),
                 Slider(
                   value: cfg.difficulty.toDouble(),
@@ -275,6 +311,7 @@ class _CoursePageState extends State<CoursePage> {
             Heading('عناصر الدراسة'),
             if (tasks.isEmpty) Text('لم أجد عناصر للدراسة في هذه المادة.'),
             ...rows,
+            SupportFiles(course: course),
           ]),
         );
       });
