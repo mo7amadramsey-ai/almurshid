@@ -46,12 +46,13 @@ void main() {
     expect(g.map((e) => e.basis).toList(), ['batch', 'batch', 'baseline']);
     expect(g[0].tasks.map((t) => t.title).toList(), ['d', 'e']);
     expect(g[1].tasks.map((t) => t.title).toList(), ['f']);
-    expect(g[2].tasks.map((t) => t.title).toSet(), {'a', 'b', 'c'});
+    // the PDF 'c' is supporting material, not a task
+    expect(g[2].tasks.map((t) => t.title).toSet(), {'a', 'b'});
   });
 
   test('explicit numbers win and meaningful sections are kept', () {
     final c = course([
-      Section(title: 'Week 1', items: [vid('Chapter 2 video'), pdf('notes')]),
+      Section(title: 'Week 1', items: [vid('Chapter 2 video'), vid('notes video')]),
       Section(title: 'Week 2', items: [vid('lec')]),
     ]);
     final t = tree([c], DateTime(2026, 11, 1));
