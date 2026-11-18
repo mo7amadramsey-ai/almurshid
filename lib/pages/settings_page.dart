@@ -1,3 +1,4 @@
+import '../app_lock.dart';
 import 'package:flutter/material.dart';
 import '../secrets.dart';
 import '../ai.dart';
@@ -94,6 +95,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 app.commit();
                 setState(() {});
               },
+            ),
+            ValueListenableBuilder<bool>(
+              valueListenable: appLockEnabled,
+              builder: (_, on, __) => SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                activeColor: kForest,
+                title: Text('قفل التطبيق ببصمة الهاتف أو رمزه'),
+                subtitle: Text('يُطلب عند الفتح وبعد 45 ثانية في الخلفية (لا أثناء جلسة الختم)'),
+                value: on,
+                onChanged: (v) => setAppLock(v),
+              ),
             ),
             Divider(),
             for (var i = 0; i < 7; i++)

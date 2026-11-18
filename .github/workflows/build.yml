@@ -41,7 +41,7 @@ jobs:
       - name: Test
         run: |
           set -eo pipefail
-          flutter test test/parser_test.dart test/crawler_test.dart test/planner_test.dart test/due_test.dart test/ai_test.dart test/chapters_test.dart test/alerts_test.dart test/viewer_test.dart test/secrets_test.dart test/data_safety_test.dart test/media_test.dart 2>&1 | tee test.log
+          flutter test test/parser_test.dart test/crawler_test.dart test/planner_test.dart test/due_test.dart test/ai_test.dart test/chapters_test.dart test/alerts_test.dart test/viewer_test.dart test/secrets_test.dart test/data_safety_test.dart test/media_test.dart test/app_lock_test.dart 2>&1 | tee test.log
         shell: bash
       - name: Build APK
         run: flutter build apk --release --target-platform android-arm,android-arm64 --build-number=${{ github.run_number }} 2>&1 | tee build.log

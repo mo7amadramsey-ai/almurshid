@@ -1,3 +1,4 @@
+import 'app_lock.dart';
 import 'package:flutter/material.dart';
 import 'app_state.dart';
 import 'pages/shell.dart';
@@ -56,6 +57,6 @@ class _MurshidAppState extends State<MurshidApp> with WidgetsBindingObserver {
         theme: buildTheme(),
         // Arabic-first app: force right-to-left layout
         builder: (context, child) => Directionality(textDirection: TextDirection.rtl, child: AppBackdrop(child: child!)),
-        home: const Shell(),
+        home: const AppLockGate(child: Shell()),
       );
 }

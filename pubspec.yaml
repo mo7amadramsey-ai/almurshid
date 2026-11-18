@@ -13,6 +13,7 @@ dependencies:
   flutter_secure_storage: ^9.2.2   # AI key in Android Keystore
   path_provider: ^2.1.0
   wakelock_plus: ^1.2.0
+  local_auth: ^2.3.0              # app lock (fingerprint / phone PIN)
   video_player: ^2.8.0            # play downloaded videos
   youtube_explode_dart: ^2.3.0    # YouTube downloads with quality choice
   pdfx: ^2.9.2                    # in-app PDF viewer

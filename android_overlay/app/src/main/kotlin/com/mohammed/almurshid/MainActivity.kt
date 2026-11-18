@@ -15,7 +15,7 @@ import android.os.Looper
 import android.provider.Settings
 import android.webkit.CookieManager
 import android.telecom.TelecomManager
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
@@ -24,7 +24,7 @@ class FocusAdmin : DeviceAdminReceiver()
 
 // Strict study session. The session lives in native storage so it survives an app kill / reboot,
 // and it carries a hard end time so it can never lock the phone longer than planned.
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
     private val prefs by lazy { getSharedPreferences("strict", MODE_PRIVATE) }
 
     private fun leftMs() = prefs.getLong("left", 0L)
