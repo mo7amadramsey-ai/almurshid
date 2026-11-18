@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../app_state.dart';
+import '../media/downloads_page.dart';
+import '../media/library_page.dart';
 import '../sync_page.dart';
 import '../notifier.dart';
 import 'follow_page.dart';
@@ -40,16 +42,21 @@ class _ShellState extends State<Shell> {
       appBar: AppBar(
         title: Text(titles[tab]),
         actions: [
-          IconButton(
-            tooltip: 'التقويم',
-            icon: Icon(Icons.calendar_month),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarPage())),
-          ),
           IconButton(tooltip: 'استيراد من مودل', icon: Icon(Icons.sync), onPressed: _sync),
-          IconButton(
-            tooltip: 'الإعدادات',
-            icon: Icon(Icons.tune),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SettingsPage())),
+          PopupMenuButton<int>(
+            tooltip: 'المزيد',
+            icon: Icon(Icons.more_vert),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            onSelected: (i) {
+              final Widget page = [CalendarPage(), LibraryPage(), DownloadsPage(), SettingsPage()][i];
+              Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 0, child: ListTile(leading: Icon(Icons.calendar_month_outlined), title: Text('التقويم'), dense: true)),
+              PopupMenuItem(value: 1, child: ListTile(leading: Icon(Icons.video_library_outlined), title: Text('مكتبتي'), dense: true)),
+              PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.download_outlined), title: Text('التنزيلات'), dense: true)),
+              PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.tune), title: Text('الإعدادات'), dense: true)),
+            ],
           ),
         ],
       ),

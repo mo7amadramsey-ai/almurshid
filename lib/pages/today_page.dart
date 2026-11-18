@@ -1,4 +1,3 @@
-import '../media/library_page.dart';
 import 'package:flutter/material.dart';
 import '../viewer/open_item.dart';
 import '../app_state.dart';
@@ -7,7 +6,6 @@ import '../planner.dart';
 import '../study_models.dart';
 import '../theme.dart';
 import '../widgets.dart';
-import 'calendar_page.dart';
 import 'strict_page.dart';
 
 String _hm(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
@@ -127,36 +125,6 @@ class TodayPage extends StatelessWidget {
         _FocusCard(slot: next),
       ],
 
-      // ---- quick actions
-      const SizedBox(height: 12),
-      Row(children: [
-        Expanded(
-          child: _QuickAction(
-            icon: Icons.lock_clock,
-            label: 'الختم الدراسي',
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StrictPage())),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _QuickAction(
-            icon: Icons.calendar_month_outlined,
-            label: 'التقويم',
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarPage())),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(child: _QuickAction(icon: Icons.event_note_outlined, label: 'الخطة', onTap: onPlan)),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _QuickAction(
-            icon: Icons.video_library_outlined,
-            label: 'مكتبتي',
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LibraryPage())),
-          ),
-        ),
-      ]),
-
       // ---- today's checklist
       Heading('مهام اليوم', trailing: slots.isEmpty ? null : Pill('$doneToday/${slots.length}  ·  ${fmtMin(today?.used ?? 0)}')),
       if (slots.isEmpty)
@@ -167,7 +135,7 @@ class TodayPage extends StatelessWidget {
       // ---- coming up
       if (up.isNotEmpty) ...[
         const Heading('قريباً'),
-        for (final u in up.take(6))
+        for (final u in up.take(3))
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Panel(
@@ -242,30 +210,6 @@ class TodayPage extends StatelessWidget {
       ),
     ]);
   }
-}
-
-class _QuickAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  const _QuickAction({required this.icon, required this.label, required this.onTap});
-  @override
-  Widget build(BuildContext context) => Material(
-        color: kSurface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18), side: BorderSide(color: kOutline)),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            child: Column(children: [
-              Icon(icon, color: kForest, size: 26),
-              const SizedBox(height: 6),
-              Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
-            ]),
-          ),
-        ),
-      );
 }
 
 class _FocusCard extends StatelessWidget {

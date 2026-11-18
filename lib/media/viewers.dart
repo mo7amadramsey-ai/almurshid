@@ -8,6 +8,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import '../viewer/guarded_web.dart';
+import '../viewer/youtube_page.dart';
 import '../widgets.dart';
 import 'files.dart';
 
@@ -100,6 +102,7 @@ class _VideoFilePageState extends State<VideoFilePage> {
       _scheduleHide();
     } catch (e) {
       if (mounted) setState(() => error = 'تعذّر تشغيل الملف');
+      debugPrint('video init failed: $e');
     }
   }
 
@@ -147,7 +150,49 @@ class _VideoFilePageState extends State<VideoFilePage> {
       backgroundColor: Colors.black,
       body: SafeArea(
         child: error != null
-            ? Center(child: Text(error!, style: const TextStyle(color: Colors.white)))
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(Icons.error_outline, color: Colors.white70, size: 44),
+                    const SizedBox(height: 12),
+                    Text(error!, style: const TextStyle(color: Colors.white, fontSize: 16)),
+                    const SizedBox(height: 18),
+                    FilledButton.icon(
+                      onPressed: () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => VideoFilePage(path: widget.path, streamUrl: widget.streamUrl, headers: widget.headers, title: widget.title))),
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('إعادة المحاولة'),
+                    ),
+                    if (widget.path.startsWith('yt:')) ...[
+                      const SizedBox(height: 10),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
+                        onPressed: () => Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => YoutubePlayerPage(
+                                    videoId: widget.path.substring(3),
+                                    title: widget.title ?? '',
+                                    originalUrl: 'https://www.youtube.com/watch?v=${widget.path.substring(3)}'))),
+                        icon: const Icon(Icons.ondemand_video),
+                        label: const Text('المشغّل البديل'),
+                      ),
+                    ] else if (widget.path.startsWith('moodle:') && widget.streamUrl != null) ...[
+                      const SizedBox(height: 10),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
+                        onPressed: () => Navigator.pushReplacement(
+                            context, MaterialPageRoute(builder: (_) => GuardedWebPage(url: widget.streamUrl!, title: widget.title ?? ''))),
+                        icon: const Icon(Icons.public),
+                        label: const Text('فتح في المتصفح'),
+                      ),
+                    ],
+                  ]),
+                ),
+              )
             : !ready
                 ? const Center(child: CircularProgressIndicator())
                 : GestureDetector(
