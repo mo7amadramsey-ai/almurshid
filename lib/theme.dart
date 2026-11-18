@@ -1,32 +1,32 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-// Al-Murshid design system: calm green + warm paper (light) and deep forest (dark).
+// ALMULZIM design system "Midnight Intelligence": night blue + cyan (dark), soft blue-white (light). Font: Tajawal.
 // Colours are read through getters so the whole app switches with [Pal.dark] (see main.dart / rebuildAll).
 class Pal {
   static bool dark = false;
   static Color pick(int light, int darkValue) => Color(dark ? darkValue : light);
 }
 
-Color get kBg => Pal.pick(0xFFF6F3EA, 0xFF11160F); // page
-Color get kSurface => Pal.pick(0xFFFFFFFF, 0xFF1A2117); // cards
-Color get kSurface2 => Pal.pick(0xFFECE7D8, 0xFF25301F); // tracks, chips, fills
-Color get kInk => Pal.pick(0xFF1F2A1C, 0xFFECEADB); // text
-Color get kMoss => Pal.pick(0xFF4C6B3C, 0xFF9CC48D); // accent text / icons
-Color get kForest => Pal.pick(0xFF3C6B47, 0xFF4C8559); // primary (buttons, progress)
-Color get kOutline => Pal.pick(0xFFE3DDCB, 0xFF2E3A29);
-Color get kTint => Pal.pick(0xFFE4EBD9, 0xFF2B3A2B); // selected / soft green fill
-Color get kGold => Pal.pick(0xFFC9A24B, 0xFFE0BE6A);
-Color get kBrown => Pal.pick(0xFF9A7350, 0xFFC9A07A);
-Color get kBrownLight => Pal.pick(0xFFEDE3D2, 0xFF3A3023);
-Color get kBrownDark => Pal.pick(0xFF5B4128, 0xFFE6CBA8);
-Color get kWarnBg => Pal.pick(0xFFF9E7DA, 0xFF3A2A1D);
-Color get kWarn => Pal.pick(0xFFB5602E, 0xFFE08A55);
-Color get kWarnText => Pal.pick(0xFF9A4A1F, 0xFFF0A878);
+Color get kBg => Pal.pick(0xFFF5F7FC, 0xFF0B1020); // page
+Color get kSurface => Pal.pick(0xFFFFFFFF, 0xFF151D32); // cards
+Color get kSurface2 => Pal.pick(0xFFEBEFFA, 0xFF1D2943); // tracks, chips, fills
+Color get kInk => Pal.pick(0xFF172039, 0xFFF2F5FF); // text
+Color get kMoss => Pal.pick(0xFF526BE8, 0xFF8CA0FF); // accent text / icons
+Color get kForest => Pal.pick(0xFF526BE8, 0xFF657CFF); // primary (buttons, progress)
+Color get kOutline => Pal.pick(0xFFDDE3F3, 0xFF27324F);
+Color get kTint => Pal.pick(0xFFE5EAFD, 0xFF1F2B57); // selected / soft green fill
+Color get kGold => Pal.pick(0xFFD99A33, 0xFFE9AE51);
+Color get kBrown => Pal.pick(0xFF1F9AAE, 0xFF42D9E8);
+Color get kBrownLight => Pal.pick(0xFFDFF4F8, 0xFF16313D);
+Color get kBrownDark => Pal.pick(0xFF146B7A, 0xFFBDEFF6);
+Color get kWarnBg => Pal.pick(0xFFFCF0DA, 0xFF3A2F1A);
+Color get kWarn => Pal.pick(0xFFC98318, 0xFFE9AE51);
+Color get kWarnText => Pal.pick(0xFF8A5B12, 0xFFF3C77F);
 
 ThemeData buildTheme() {
   final b = Pal.dark ? Brightness.dark : Brightness.light;
-  final scheme = ColorScheme.fromSeed(seedColor: const Color(0xFF3C6B47), brightness: b).copyWith(
+  final scheme = ColorScheme.fromSeed(seedColor: const Color(0xFF657CFF), brightness: b).copyWith(
     primary: kForest,
     onPrimary: Colors.white,
     secondary: kMoss,
@@ -43,7 +43,7 @@ ThemeData buildTheme() {
   return ThemeData(
     useMaterial3: true,
     brightness: b,
-    fontFamily: 'IBMPlexArabic',
+    fontFamily: 'Tajawal',
     colorScheme: scheme,
     textTheme: text,
     scaffoldBackgroundColor: Colors.transparent, // AppBackdrop paints the page
@@ -56,7 +56,7 @@ ThemeData buildTheme() {
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       labelTextStyle: WidgetStateProperty.resolveWith((s) => TextStyle(
-            fontFamily: 'IBMPlexArabic',
+            fontFamily: 'Tajawal',
             fontSize: 12,
             fontWeight: s.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w500,
             color: s.contains(WidgetState.selected) ? kForest : kInk.withValues(alpha: 0.7),
@@ -68,7 +68,7 @@ ThemeData buildTheme() {
       selectedColor: kTint,
       backgroundColor: kSurface,
       side: BorderSide(color: kOutline),
-      labelStyle: TextStyle(color: kInk, fontFamily: 'IBMPlexArabic'),
+      labelStyle: TextStyle(color: kInk, fontFamily: 'Tajawal'),
       shape: const StadiumBorder(),
     ),
     appBarTheme: AppBarTheme(
@@ -77,7 +77,7 @@ ThemeData buildTheme() {
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
-      titleTextStyle: TextStyle(fontFamily: 'IBMPlexArabic', fontSize: 22, fontWeight: FontWeight.w700, color: kInk),
+      titleTextStyle: TextStyle(fontFamily: 'Tajawal', fontSize: 22, fontWeight: FontWeight.w700, color: kInk),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -86,7 +86,7 @@ ThemeData buildTheme() {
         minimumSize: const Size(48, 50),
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
         shape: r16,
-        textStyle: const TextStyle(fontFamily: 'IBMPlexArabic', fontWeight: FontWeight.w700, fontSize: 15),
+        textStyle: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -116,7 +116,7 @@ ThemeData buildTheme() {
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
       backgroundColor: Pal.dark ? kSurface2 : const Color(0xFF283420),
-      contentTextStyle: const TextStyle(color: Colors.white, fontFamily: 'IBMPlexArabic'),
+      contentTextStyle: const TextStyle(color: Colors.white, fontFamily: 'Tajawal'),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     ),
   );

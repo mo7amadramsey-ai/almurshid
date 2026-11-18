@@ -51,7 +51,7 @@ class _MurshidAppState extends State<MurshidApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'المرشد الدراسي',
+        title: 'المُلزم',
         debugShowCheckedModeBanner: false,
         theme: buildTheme(),
         // Arabic-first app: force right-to-left layout

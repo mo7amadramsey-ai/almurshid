@@ -16,7 +16,7 @@
     </queries>
 
     <application
-        android:label="المرشد الدراسي"
+        android:label="المُلزم"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -55,7 +55,7 @@
         <service
             android:name=".LockService"
             android:exported="true"
-            android:label="المرشد الدراسي"
+            android:label="المُلزم"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService"/>

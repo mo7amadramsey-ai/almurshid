@@ -104,6 +104,6 @@ class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, i: Intent) {
         val id = i.getIntExtra("id", 0)
         Notifier.fired(ctx, id)
-        Notifier.show(ctx, id, i.getStringExtra("title") ?: "المرشد الدراسي", i.getStringExtra("body") ?: "")
+        Notifier.show(ctx, id, i.getStringExtra("title") ?: "المُلزم", i.getStringExtra("body") ?: "")
     }
 }

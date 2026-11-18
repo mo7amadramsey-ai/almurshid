@@ -1,2 +1,0 @@
-IBM Plex Sans Arabic - Copyright IBM Corp. Licensed under the SIL Open Font License 1.1 (https://openfontlicense.org).
-Source: https://github.com/google/fonts/tree/main/ofl/ibmplexsansarabic
