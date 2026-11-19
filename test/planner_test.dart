@@ -154,6 +154,8 @@ void main() {
           item: Item(title: id, url: 'https://x/$id', kind: ItemKind.video),
           order: 0,
           minutes: minutes,
+          done: false,
+          doneAt: null,
         );
 
     test('imposes the smallest daily target that finishes in time', () {

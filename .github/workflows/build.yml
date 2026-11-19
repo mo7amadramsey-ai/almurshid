@@ -4,6 +4,10 @@ on:
   workflow_dispatch:
 permissions:
   contents: write   # needed to publish a Release
+# a newer push to the same branch cancels the older build (8 parallel sessions would otherwise queue up)
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -87,7 +91,9 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
       # Publish the APK as a GitHub Release (visible in the repo's "Releases" section)
       # main -> normal release; any other branch -> pre-release (so a test build never becomes "latest")
+      # Session branches (session/*) only upload the APK as a workflow artifact; no pre-release spam.
       - uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/modern-redesign-hardening'
         with:
           tag_name: ${{ github.ref == 'refs/heads/main' && format('v1.0.{0}', github.run_number) || format('dev-{0}', github.run_number) }}
           name: المرشد الدراسي ${{ github.ref == 'refs/heads/main' && format('v1.0.{0}', github.run_number) || format('dev-{0} ({1})', github.run_number, github.ref_name) }}
