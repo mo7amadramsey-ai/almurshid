@@ -96,6 +96,30 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             Divider(),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              activeColor: kForest,
+              title: Text('التطبيق يحدد ساعات الدراسة'),
+              subtitle: Text(
+                s.autoHours
+                    ? 'يحسب التطبيق أقل عدد ساعات يومياً يُنهي موادك في موعدها ويفرضه عليك. اجعل يوماً 0 ليكون راحة.'
+                    : 'أنت تحدد ساعات كل يوم بنفسك من الأشرطة أدناه.',
+              ),
+              value: s.autoHours,
+              onChanged: (v) {
+                s.autoHours = v;
+                app.commit();
+                setState(() {});
+              },
+            ),
+            if (s.autoHours && (app.plan?.report.autoMinutes ?? 0) > 0)
+              Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'الهدف اليومي المفروض الآن: ${fmtMin(app.plan!.report.autoMinutes)}',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
             for (var i = 0; i < 7; i++)
               Row(children: [
                 SizedBox(width: 70, child: Text(weekdayNames[i])),

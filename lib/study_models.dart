@@ -63,6 +63,7 @@ class Settings {
   int bufferDays; // safety days kept free before each exam
   double videoFactor; // video minutes x factor (pauses, notes)
   bool tired; // "I'm tired": capacity x 0.75
+  bool autoHours; // ON by default: the APP decides the daily hours (smallest uniform target that finishes in time)
   int windowStart; // allowed study window: minutes from midnight (default 08:00)
   int windowEnd; // minutes from midnight (default 22:00)
   String apiKey;
@@ -77,6 +78,7 @@ class Settings {
     this.bufferDays = 2,
     this.videoFactor = 1.5,
     this.tired = false,
+    this.autoHours = true,
     this.windowStart = 8 * 60,
     this.windowEnd = 22 * 60,
     this.apiKey = '',
@@ -111,6 +113,7 @@ class Settings {
         'bufferDays': bufferDays,
         'videoFactor': videoFactor,
         'tired': tired,
+        'autoHours': autoHours,
         'windowStart': windowStart,
         'windowEnd': windowEnd,
         if (keyInFile) 'apiKey': apiKey, // legacy only; the key normally lives in Keystore (secrets.dart)
@@ -129,6 +132,7 @@ class Settings {
       bufferDays: (j['bufferDays'] as num?)?.toInt() ?? 2,
       videoFactor: (j['videoFactor'] as num?)?.toDouble() ?? 1.5,
       tired: (j['tired'] as bool?) ?? false,
+      autoHours: (j['autoHours'] as bool?) ?? true,
       windowStart: (j['windowStart'] as num?)?.toInt() ?? 8 * 60,
       windowEnd: (j['windowEnd'] as num?)?.toInt() ?? 22 * 60,
       apiKey: legacyKey,

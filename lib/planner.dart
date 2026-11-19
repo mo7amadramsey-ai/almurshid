@@ -162,6 +162,8 @@ class Report {
   int availableMin = 0;
   int shortfallMin = 0;
   double extraHoursPerDay = 0;
+  bool autoApplied = false; // the daily target was decided by the app (Settings.autoHours)
+  int autoMinutes = 0; // that daily target in minutes (0 when there is nothing left to study)
   final Map<String, int> shortfallByCourse = {}; // course title -> minutes
   final List<String> warnings = [];
   bool get feasible => shortfallMin == 0;
@@ -186,11 +188,43 @@ DateTime studyUntil(String courseId, Map<String, CourseCfg> cfg, Settings s) {
   return dOnly(s.deadline);
 }
 
+/// Smallest and largest daily target the app will impose (minutes).
+const kAutoMinMinutes = 60;
+const kAutoMaxMinutes = 600;
+
+/// The plan. With [Settings.autoHours] (default) the APP decides how many hours must be studied each day:
+/// the smallest uniform daily target (steps of 15 min) that finishes every course before its last study day.
+/// Rest days (0 h in settings) stay rest days. If even the largest target cannot finish, that largest target
+/// is used and the shortfall is reported. With autoHours off the per-weekday hours from settings are used.
 Plan buildPlan({
   required List<Task> tasks,
   required Map<String, CourseCfg> cfg,
   required Settings settings,
   DateTime? now,
+}) {
+  if (!settings.autoHours) return _build(tasks: tasks, cfg: cfg, settings: settings, now: now);
+  var maxMin = settings.windowMinutes > 0 && settings.windowMinutes < kAutoMaxMinutes ? settings.windowMinutes : kAutoMaxMinutes;
+  if (settings.tired) maxMin = ((maxMin * 0.75) / 15).floor() * 15;
+  if (maxMin < kAutoMinMinutes) maxMin = kAutoMinMinutes;
+  var chosen = kAutoMinMinutes;
+  Plan? best;
+  for (var h = kAutoMinMinutes; h <= maxMin; h += 15) {
+    chosen = h;
+    best = _build(tasks: tasks, cfg: cfg, settings: settings, now: now, flatMinutes: h);
+    if (best.report.shortfallMin == 0) break;
+  }
+  final plan = best ?? _build(tasks: tasks, cfg: cfg, settings: settings, now: now, flatMinutes: kAutoMinMinutes);
+  plan.report.autoApplied = true;
+  plan.report.autoMinutes = plan.report.totalMin == 0 ? 0 : chosen;
+  return plan;
+}
+
+Plan _build({
+  required List<Task> tasks,
+  required Map<String, CourseCfg> cfg,
+  required Settings settings,
+  DateTime? now,
+  int? flatMinutes, // set by the auto mode: every study day gets this many minutes
 }) {
   final s = settings;
   final today = dOnly(now ?? DateTime.now());
@@ -213,9 +247,11 @@ Plan buildPlan({
   final days = <DayPlan>[];
   if (last != null) {
     for (var d = today; !d.isAfter(last); d = DateTime(d.year, d.month, d.day + 1)) {
-      final want = s.hours[d.weekday - 1] * 60;
+      final isStudyDay = s.hours[d.weekday - 1] > 0;
+      final want = flatMinutes != null ? (isStudyDay ? flatMinutes.toDouble() : 0.0) : s.hours[d.weekday - 1] * 60;
       final limit = s.windowMinutes > 0 && want > s.windowMinutes ? s.windowMinutes.toDouble() : want;
-      var cap = ((limit * (s.tired ? 0.75 : 1.0)) / 5).floor() * 5;
+      // In auto mode "tired" lowers the largest target instead of scaling every day.
+      var cap = ((limit * (flatMinutes == null && s.tired ? 0.75 : 1.0)) / 5).floor() * 5;
       if (days.isEmpty) cap = cap - doneToday < 0 ? 0 : cap - doneToday;
       days.add(DayPlan(d, cap));
     }

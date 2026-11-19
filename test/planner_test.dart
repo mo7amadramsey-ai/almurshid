@@ -17,6 +17,7 @@ final now = DateTime(2026, 11, 15, 9);
 StudyData dataWith({double hours = 4, DateTime? deadline}) {
   final d = StudyData();
   d.settings.hours = List<double>.filled(7, hours);
+  d.settings.autoHours = false; // these tests exercise the fixed per-weekday hours
   d.settings.deadline = deadline ?? DateTime(2026, 12, 1);
   return d;
 }
@@ -142,5 +143,66 @@ void main() {
     expect(studyUntil('X', data.courses, data.settings), DateTime(2026, 12, 2));
     data.cfg('B').exam = DateTime(2026, 12, 5);
     expect(studyUntil('B', data.courses, data.settings), DateTime(2026, 12, 4));
+  });
+
+  group('auto hours: the app decides how much to study each day', () {
+    Task t(String id, int minutes, {String course = '1'}) => Task(
+          id: '$course|$id',
+          courseId: course,
+          courseTitle: 'Course $course',
+          section: 'Week 1',
+          item: Item(title: id, url: 'https://x/$id', kind: ItemKind.video),
+          order: 0,
+          minutes: minutes,
+        );
+
+    test('imposes the smallest daily target that finishes in time', () {
+      final data = StudyData();
+      data.settings.autoHours = true;
+      data.settings.deadline = DateTime(2026, 11, 19); // 5 study days: Nov 15..19
+      data.settings.bufferDays = 0;
+      final plan = buildPlan(tasks: [t('a', 600)], cfg: data.courses, settings: data.settings, now: now);
+      expect(plan.report.autoApplied, true);
+      expect(plan.report.shortfallMin, 0);
+      expect(plan.report.autoMinutes, 120); // 600 min / 5 days
+      expect(plan.today!.capacity, 120);
+    });
+
+    test('never goes below the minimum and never imposes hours on rest days', () {
+      final data = StudyData();
+      data.settings.deadline = DateTime(2026, 11, 22);
+      data.settings.bufferDays = 0;
+      data.settings.hours[DateTime(2026, 11, 20).weekday - 1] = 0; // Friday = rest day
+      final plan = buildPlan(tasks: [t('a', 30)], cfg: data.courses, settings: data.settings, now: now);
+      expect(plan.report.autoMinutes, kAutoMinMinutes);
+      final friday = plan.days.firstWhere((d) => d.date == DateTime(2026, 11, 20));
+      expect(friday.capacity, 0);
+    });
+
+    test('when even the largest target is not enough it uses the largest and reports the shortfall', () {
+      final data = StudyData();
+      data.settings.deadline = DateTime(2026, 11, 16); // 2 days
+      data.settings.bufferDays = 0;
+      final plan = buildPlan(tasks: [t('a', 5000)], cfg: data.courses, settings: data.settings, now: now);
+      expect(plan.report.autoMinutes, kAutoMaxMinutes);
+      expect(plan.report.shortfallMin, greaterThan(0));
+      expect(plan.report.feasible, false);
+    });
+
+    test('nothing left to study means no imposed target', () {
+      final data = StudyData();
+      final plan = buildPlan(tasks: [], cfg: data.courses, settings: data.settings, now: now);
+      expect(plan.report.autoMinutes, 0);
+    });
+
+    test('turning auto off restores the hours typed per weekday', () {
+      final data = StudyData();
+      data.settings.autoHours = false;
+      data.settings.hours = List<double>.filled(7, 3);
+      data.settings.deadline = DateTime(2026, 11, 19);
+      final plan = buildPlan(tasks: [t('a', 60)], cfg: data.courses, settings: data.settings, now: now);
+      expect(plan.report.autoApplied, false);
+      expect(plan.today!.capacity, 180);
+    });
   });
 }
