@@ -12,7 +12,12 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '21' }
       - uses: subosito/flutter-action@v2
-        with: { channel: stable }
+        # PINNED: 'channel: stable' jumped to Flutter 3.50 on 2026-11-11 and builds made with it stopped
+        # installing on the phone ("package invalid"). 3.47.x builds installed fine.
+        with:
+          channel: stable
+          flutter-version: '3.47.x'
+          cache: true
       # Generate the Android scaffolding (existing files are kept)
       - run: flutter create --platforms=android --org com.mohammed --project-name almurshid .
       # `flutter create` adds a sample test that does not belong to this project (and breaks analysis)
