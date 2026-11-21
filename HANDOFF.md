@@ -23,4 +23,4 @@
 
 
 ## حالة جلسة التصميم (2026-11-17)
-أُنجزت دفعات 1-3 (راجع `docs/reports/2026-11-17_report-16.md`; وبعدها report-17: التنزيلات والمكتبة؛ report-18: اتجاه المُلزم + docs/spec/ALMULZIM_SPEC.md؛ report-19: قفل التطبيق بالبصمة)، وربطتُ `DataPrivacyPanel` و`StrictInfoPage`. الحجز على `lib/pages/*` ما زال قائماً للدفعة التالية (التقويم، الإعدادات، المزامنة).
+أُنجزت دفعات 1-3 (راجع `docs/reports/2026-11-17_report-16.md`; وبعدها report-17: التنزيلات والمكتبة؛ report-18: اتجاه المُلزم + docs/spec/ALMULZIM_SPEC.md؛ report-19: قفل التطبيق بالبصمة؛ report-20: سبب فشل التثبيت = Flutter 3.50 + الأيقونة)، وربطتُ `DataPrivacyPanel` و`StrictInfoPage`. الحجز على `lib/pages/*` ما زال قائماً للدفعة التالية (التقويم، الإعدادات، المزامنة).
